@@ -42,5 +42,6 @@ export default defineConfig({
     nav: nav,
     sidebarMenuLabel: '菜单',
     sidebar: sidebar
-  }
+  },
+   cleanUrls: false
 })
