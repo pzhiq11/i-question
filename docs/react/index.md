@@ -1,9 +1,24 @@
 # React 基础知识
 
-## 问题 1：React 中为什么要设计 Hook，为了解决什么问题
+## 问题 1：什么是 React Hooks？
+
+React Hooks 是 React 一种新的特性，它允许在函数组件中使用状态（state）、副作用和其它 react 特性，而无需编写类组件 ‌‌。
+
+### 使用 React Hooks 好处是啥？
 
 - **简化状态管理和副作用**：Hooks 允许你直接在函数组件中处理状态和副作用，无需类和复杂的生命周期方法。
 - **逻辑拆分与重用**：通过自定义 Hooks，你可以将复杂的逻辑拆分成小的可重用单元，从而使代码更简洁、可读。
+
+#### React 特性：
+
+jsx 语法、组件化开发、单向数据流、组件状态管理、虚拟 dom、ssr。
+
+- jsx 语法 ‌：JSX 是 JavaScript 的语法扩展，允许在 JavaScript 中书写类似 HTML 的代码，用于描述 UI 结构更加直观和简洁。
+- 组件化开发 ‌：React 鼓励将 UI 拆分为独立的、可复用的组件。
+- 单向数据流 ‌：数据通过 props 自上而下传递，这种单向数据流简化了状态管理和问题追踪，减少了数据流动的复杂性 ‌。
+- 组件状态管理 ‌：React 通过 Hooks 来管理组件的状态，它允许在函数组件中管理状态，而不需要使用 class 组件。
+- 虚拟 DOM ‌：React 使用虚拟 DOM 来提高性能，它将 UI 的更新操作与 DOM 的更新操作分离开，从而减少实际的 DOM 操作次数。
+- ssr ‌：React 通过 SSR（服务器端渲染）来提高网站性能，它允许在服务器上渲染组件，然后将其发送给客户端，从而减少客户端的请求次数。
 
 ## 问题 2：组件的生命周期方法
 
@@ -35,75 +50,64 @@ React 组件的生命周期可以分为三个阶段：挂载阶段、更新阶�
 我们在界面的输入框中输入内容，这时候你会发现这个 value 是只读的，无法修改，还会报错
 
 ```tsx
-import React, { useState } from 'react'
+import React, { useState } from "react";
 
 const App: React.FC = () => {
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState("");
   return (
     <>
-      <input
-        type='text'
-        value={value}
-      />
+      <input type="text" value={value} />
       <div>{value}</div>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
 ```
 
 当用户输入内容的时候，value 并不会自动更新，这时候就需要我们手动实现一个 onChange 事件来更新 value。
 
 ```tsx
-import React, { useState } from 'react'
+import React, { useState } from "react";
 
 const App: React.FC = () => {
-  const [value, setValue] = useState('')
+  const [value, setValue] = useState("");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value)
-  }
+    setValue(e.target.value);
+  };
   return (
     <>
-      <input
-        type='text'
-        value={value}
-        onChange={handleChange}
-      />
+      <input type="text" value={value} onChange={handleChange} />
       <div>{value}</div>
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
 ```
 
 :::
 
 ```jsx
-import React, { useState } from 'react'
+import React, { useState } from "react";
 
 // 受控组件
 function ControlledComponent() {
-  const [inputValue, setInputValue] = useState('')
+  const [inputValue, setInputValue] = useState("");
 
   const handleChange = (event) => {
-    setInputValue(event.target.value)
-  }
+    setInputValue(event.target.value);
+  };
 
   return (
     <div>
-      <input
-        type='text'
-        value={inputValue}
-        onChange={handleChange}
-      />
+      <input type="text" value={inputValue} onChange={handleChange} />
       <p>输入的内容: {inputValue}</p>
     </div>
-  )
+  );
 }
 
-export default ControlledComponent
+export default ControlledComponent;
 ```
 
 - **非受控组件**：是指表单元素不受 React 的 State 管理。它的状态通常通过 ref 从 DOM 中获取。
@@ -111,26 +115,26 @@ export default ControlledComponent
 > 采用 `defaultValue`，变为非受控组件
 
 ```jsx {13}
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef } from "react";
 const App = () => {
-  const value = 'wifi'
-  const inputRef = useRef(null)
+  const value = "wifi";
+  const inputRef = useRef(null);
   const handleChange = () => {
-    console.log(inputRef.current?.value)
-  }
+    console.log(inputRef.current?.value);
+  };
   return (
     <>
       <input
-        type='text'
+        type="text"
         onChange={handleChange}
         defaultValue={value}
         ref={inputRef}
       />
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;
 ```
 
 - **特殊的非受控组件**：对于 file 类型的表单控件，它是一个特殊的组件，因为它的值只能由用户通过文件选择操作来设置，而不能通过程序直接设置，所以<u>`file`只能是非受控组件</u>。
@@ -208,26 +212,26 @@ export default App
 ```tsx [ErrorBoundary组件]
 class ErrorBoundary extends React.Component {
   constructor(props) {
-    super(props)
-    this.state = { hasError: false }
+    super(props);
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error) {
     // 更新 state 使下一次渲染能够显示降级后的 UI。
-    return { hasError: true }
+    return { hasError: true };
   }
 
   componentDidCatch(error, errorInfo) {
     // 你同样可以将错误日志上报给服务器。
-    logErrorToMyService(error, errorInfo)
+    logErrorToMyService(error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       // 你可以自定义降级后的 UI 并渲染。
-      return <h1>Something went wrong.</h1>
+      return <h1>Something went wrong.</h1>;
     }
-    return this.props.children
+    return this.props.children;
   }
 }
 ```
@@ -240,3 +244,16 @@ class ErrorBoundary extends React.Component {
 ```
 
 :::
+
+## 问题 12：React 中‌自定义Hook的规范
+1. 命名规范
+- ‌以“use”开头‌：自定义Hook的命名必须以“use”开头，这是React和Vue中自定义Hook的命名约定。例如，useCounter、useFetchData等‌
+- ‌函数形式‌：自定义Hook是一个函数，用于封装可复用的逻辑。
+2. 使用规范
+- ‌只能在函数组件中使用‌：自定义Hook只能在函数组件中使用，不能在普通的JavaScript函数中使用。例如，不能在类组件或普通的JavaScript函数中调用自定义Hook‌
+- ‌只能在顶层调用‌：自定义Hook必须在函数组件的顶层调用，不能在循环、条件或嵌套函数中调用。确保每次组件渲染时Hook的调用顺序完全相同‌
+- ‌可以调用其他Hook‌：自定义Hook可以调用其他内置的React Hooks（如useState、useEffect等）。
+
+## 问题 13：React 什么不能在循环、条件或嵌套函数中调用 Hook？
+原因是 React 依赖hook调用顺序，内部采用index下标去识别每个 Hook 的位置，
+若在条件或循环中调用 Hook，会导致调用顺序不一致，破坏内部 Hook 栈，从而引发运行时错误或逻辑异常。
