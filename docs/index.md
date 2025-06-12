@@ -25,8 +25,8 @@ features:
       link: /前端工程化/模块化规范
     - title: 性能优化
       link: /性能优化/
-    - title: 项目
-      link: /项目/
+    # - title: 项目
+    #   link: /项目/
     - title: 算法
       link: /算法/数据结构/
     - title: Git

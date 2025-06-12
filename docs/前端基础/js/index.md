@@ -6,13 +6,47 @@
 
 :::
 
-## 问题 1：阐述一下 JS 的事件循环
+## 问题 1：阐述一下 js 主线程 和事件循环
 
-事件循环又叫做消息循环，是浏览器渲染主线程的工作方式。
+在前端开发中，JavaScript 主线程主要负责执行代码、处理事件、以及渲染页面。
 
-它开启一个不会结束的 for 循环，每次循环从消息队列中取出第一个任务执行，而其他线程只需要在合适的时候将任务加入到队列末尾即可。
+1.  事件循环
 
-每个任务有不同的类型，同类型的任务必须在同一个队列，不同的任务可以属于不同的队列。不同任务队列有不同的优先级，在一次事件循环中，由浏览器自行决定取哪一个队列的任务。但浏览器必须有一个微队列，微队列的任务一定具有最高的优先级，必须优先调度执行。
+    JavaScript 运行在单线程环境中，这意味着在同一时间内只能执行一个任务。它的运行机制基于事件循环（Event Loop），允许它在执行代码的同时处理网络请求、定时器等异步任务。
+    <!-- 它开启一个不会结束的 for 循环，每次循环从消息队列中取出第一个任务执行，而其他线程只需要在合适的时候将任务加入到队列末尾即可。 -->
+
+    事件循环的主要组成部分包括：
+
+    - 调用栈（Call Stack）：这是同步代码执行的地方。每当一个函数被调用时，它会被添加到调用栈的末尾。
+    - 任务队列（Task Queue）：也称为消息队列（Message Queue），用于存放待处理的事件和回调函数。
+    - 微任务队列（Microtask Queue）：用于存放 Promise 的回调、process.nextTick（Node.js 环境）等需要尽快执行的回调。
+
+    事件循环的工作流程
+
+    1. 执行全局代码：全局代码被添加到调用栈中执行。
+    2. 遇到异步操作：当遇到异步操作（如 setTimeout, Promise 等）时，相关的回调函数会被添加到任务队列或微任务队列中，而不是立即执行。
+    3. 调用栈为空：当调用栈为空时，事件循环开始检查微任务队列。如果有微任务，则依次执行直到队列为空。
+    4. 执行宏任务：所有微任务执行完毕后，事件循环会从任务队列中取出一个宏任务来执行。
+    5. 重复：重复步骤 3 和 4，直到所有宏任务和微任务都被处理完毕。
+
+1.  异步编程
+
+    常见的异步编程方式包括：
+    回调函数（Callbacks）
+    Promises
+    async/await
+
+1.  性能优化
+
+    JavaScript 主线程的性能优化主要包括：
+
+    - 减少全局变量的使用
+    - 使用事件委托减少事件监听器的数量
+    - 避免在循环或递归中执行耗时操作
+    - 利用 Web Workers 进行后台计算
+    - 代码拆分与懒加载
+    - 使用 requestAnimationFrame 优化动画性能
+    -
 
 ## 问题 2：请说说你对函数式编程的理解
 
@@ -27,7 +61,7 @@
 无任何副作用，相同的输入（参数）得到相同的输出（返回值）
 
 ```js
-const add = (a, b) => a + b
+const add = (a, b) => a + b;
 ```
 
 #### 不可变性
@@ -40,8 +74,8 @@ const add = (a, b) => a + b
 - 输出一个函数作为返回值
 
 ```js
-const add = (a) => (b) => a + b
-add(1)(2)
+const add = (a) => (b) => a + b;
+add(1)(2);
 ```
 
 #### 函数组合（类似面向对象的继承）
@@ -50,11 +84,11 @@ add(1)(2)
 const compose =
   (...fns) =>
   (x) =>
-    fns.reduceRight((y, fn) => fn(y), x)
-const double = (x) => x * 2
-const square = (x) => x * x
-const doubleAndSquare = compose(square, double)
-console.log(doubleAndSquare(3)) // 36
+    fns.reduceRight((y, fn) => fn(y), x);
+const double = (x) => x * 2;
+const square = (x) => x * x;
+const doubleAndSquare = compose(square, double);
+console.log(doubleAndSquare(3)); // 36
 ```
 
 ### 优点总结
@@ -66,13 +100,15 @@ console.log(doubleAndSquare(3)) // 36
 
 ## 问题 3：如何理解 JS 的异步？
 
-JS 是一门单线程的语言，这是因为它运行在浏览器的渲染主线程中，而渲染主线程只有一个。
+首先介绍 JS 是单线程的：
+JavaScript 是浏览器的脚本语言，主要用途是进行页面的一系列交互操作以及用户互动。如果以多线程的方式进行浏览器操作，通常会引发竞态条件、死锁和资源竞争等问题，出现不可预测的冲突。因此，JavaScript 设计为单线程很好地简化了这类并发问题。例如，假设有两个线程同时操作同一个 DOM 元素，线程 1 要求浏览器修改 DOM 内容，而线程 2 却要求删除 DOM，浏览器就会困惑，无法决定采用哪个线程的操作。
 
+JS 是一门单线程的语言，这是因为它运行在浏览器的渲染主线程中，而渲染主线程只有一个。
 而渲染主线程承担着诸多的工作，渲染页面、执行 JS 都在其中运行。
 
-如果使用同步的方式，就极有可能导致主线程产生阻塞，从而导致消息队列中的很多其他任务无法得到执行。这样一来，一方面会导致繁忙的主线程白白的消耗时间，另一方面导致页面无法及时更新，给用户造成卡死现象。
+代码在执行过程中，会遇到一些无法立即处理的任务，如果让渲染主线程等待这些任务的时机达到，就会导致主线程长期处于阻塞的状态，从而导致导致消息队列中的很多其他任务无法得到执行、页面无法及时更新和浏览器卡死。
 
-所以浏览器采用异步的方式来避免。具体做法是当某些任务发生时，比如计时器、网络、事件监听，主线程将任务交给其他线程去处理，自身立即结束任务的执行，转而执行后续代码。当其他线程完成时，将事先传递的回调函数包装成任务，加入到消息队列的末尾排队，等待主线程调度执行。
+所以浏览器采用异步的方式来避免。具体做法是当某些任务发生时，比如计时器、网络、事件监听，主线程将任务交给其他线程去处理，当其他线程完成时，将事先传递的回调函数包装成任务，加入到消息队列的末尾排队，等待主线程调度执行。
 
 在这种异步模式下，浏览器永不阻塞，从而最大限度的保证了单线程的流畅运行。
 
@@ -85,27 +121,27 @@ JS 是一门单线程的语言，这是因为它运行在浏览器的渲染主�
 const fetchData = (id) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      resolve(id)
-    }, 1000)
-  })
-}
+      resolve(id);
+    }, 1000);
+  });
+};
 
 // 记录缓存
-const cache = {}
+const cache = {};
 
 // 缓存请求
 const cacheFetchData = (id) => {
   if (cache[id]) {
-    return cache[id]
+    return cache[id];
   }
-  cache[id] = fetchData(id)
-  return cache[id]
-}
+  cache[id] = fetchData(id);
+  return cache[id];
+};
 
 // 测试
-cacheFetchData(3).then((id) => console.log(id))
-cacheFetchData(3).then((id) => console.log(id))
-cacheFetchData(3).then((id) => console.log(id))
+cacheFetchData(3).then((id) => console.log(id));
+cacheFetchData(3).then((id) => console.log(id));
+cacheFetchData(3).then((id) => console.log(id));
 ```
 
 <img src="./img/同一个页面三个组件请求同一个API.png" alt="同一个页面三个组件请求同一个API.png" style="zoom:50%;" />
@@ -138,8 +174,8 @@ cacheFetchData(3).then((id) => console.log(id))
 - BigInt
 
 ```js
-const bigNum = BigInt('12312312321323313123213123132343434343434')
-bigNum + bigNum
+const bigNum = BigInt("12312312321323313123213123132343434343434");
+bigNum + bigNum;
 ```
 
 - Decimal.js
@@ -175,36 +211,36 @@ bigNum + bigNum
 - **创建 Symbol**：
 
 ```js
-let sym1 = Symbol()
-let sym2 = Symbol('description')
+let sym1 = Symbol();
+let sym2 = Symbol("description");
 ```
 
 - **唯一性**： 每个 Symbol 值都是唯一的，即使它们有相同的描述。
 
 ```js
-let sym1 = Symbol('key')
-let sym2 = Symbol('key')
-console.log(sym1 === sym2) // false
+let sym1 = Symbol("key");
+let sym2 = Symbol("key");
+console.log(sym1 === sym2); // false
 ```
 
 - **作为对象属性键**： Symbol 可以用作对象属性的键，这有助于避免属性名冲突。
 
 ```js
-let mySymbol = Symbol('myKey')
-let obj = {}
-obj[mySymbol] = 'value'
-console.log(obj[mySymbol]) // "value"
+let mySymbol = Symbol("myKey");
+let obj = {};
+obj[mySymbol] = "value";
+console.log(obj[mySymbol]); // "value"
 ```
 
 - **全局 Symbol 注册表**： 如果需要在不同的上下文中共享同一个 Symbol，可以使用 Symbol.for 和 Symbol.keyFor 方法。
 
 ```js
-let sym1 = Symbol.for('sharedKey')
-let sym2 = Symbol.for('sharedKey')
-console.log(sym1 === sym2) // true
+let sym1 = Symbol.for("sharedKey");
+let sym2 = Symbol.for("sharedKey");
+console.log(sym1 === sym2); // true
 
-let res = Symbol.keyFor(sym1)
-console.log(res) // "sharedKey"
+let res = Symbol.keyFor(sym1);
+console.log(res); // "sharedKey"
 ```
 
 - **内置符号**： JavaScript 提供了一些内置的 Symbol，用于实现语言内部的功能，例如迭代器协议、异步迭代等。
@@ -214,15 +250,15 @@ console.log(res) // "sharedKey"
 ```js
 let obj = {
   [Symbol.iterator]() {
-    let i = 0
+    let i = 0;
     return {
-      next: () => ({ value: i++, done: i > 3 })
-    }
-  }
-}
+      next: () => ({ value: i++, done: i > 3 }),
+    };
+  },
+};
 
 for (let value of obj) {
-  console.log(value) // 0, 1, 2
+  console.log(value); // 0, 1, 2
 }
 ```
 
@@ -238,43 +274,43 @@ for (let value of obj) {
 ```js [案例1]
 // 代码1（隐藏类）
 const obj1 = {
-  a: 1
-}
+  a: 1,
+};
 const obj2 = {
-  a: 1
-}
+  a: 1,
+};
 const obj3 = {
-  a: 1
-}
+  a: 1,
+};
 
 // 代码2
 const obj1 = {
-  a: 1
-}
+  a: 1,
+};
 const obj2 = {
-  b: 1
-}
+  b: 1,
+};
 const obj3 = {
-  c: 1
-}
+  c: 1,
+};
 ```
 
 ```js [案例2]
 // 代码1（隐藏类）
-console.time('a')
+console.time("a");
 for (let i = 0; i < 1000000; ++i) {
-  const obj = {}
-  obj['a'] = i
+  const obj = {};
+  obj["a"] = i;
 }
-console.timeEnd('a')
+console.timeEnd("a");
 
 // 代码2
-console.time('b')
+console.time("b");
 for (let i = 0; i < 1000000; ++i) {
-  const obj = {}
-  obj['$(i)'] = i
+  const obj = {};
+  obj["$(i)"] = i;
 }
-console.timeEnd('b')
+console.timeEnd("b");
 ```
 
 :::
@@ -289,16 +325,16 @@ console.timeEnd('b')
 
 ```js
 // 代码1（数组 - 快速模式）
-const arr1 = []
+const arr1 = [];
 for (let i = 0; i < 10000000; ++i) {
-  arr1[i] = 1
+  arr1[i] = 1;
 }
 
 // 代码2（数字 - 字典模式）
-const arr2 = []
-arr2[10000000 - 1] = 1
+const arr2 = [];
+arr2[10000000 - 1] = 1;
 for (let i = 0; i < 10000000; ++i) {
-  arr2[i] = 1
+  arr2[i] = 1;
 }
 ```
 
@@ -328,22 +364,22 @@ for (let i = 0; i < 10000000; ++i) {
 **强制类型转换：**
 
 ```js
-var num = Number('42') // 强制将字符串转换为数字
-var str = String(123) // 强制将数字转换为字符串
-var bool = Boolean(0) // 强制将数字转换为布尔值
+var num = Number("42"); // 强制将字符串转换为数字
+var str = String(123); // 强制将数字转换为字符串
+var bool = Boolean(0); // 强制将数字转换为布尔值
 ```
 
 **隐式类型转换：**
 
 ```js
-var result = 10 + '5' // 隐式将数字和字符串相加，结果为字符串 "105"
-true == 1 // 隐式将布尔值转换为数字 1
-false == 0 // 隐式将布尔值转换为数字 0
-true + false // 1
-true + '5' // 隐式将布尔值转换为字符串，结果为 "true5"
-true + 2 // 3
-'5' * '2' // 隐式将字符串转换为数字，结果为 10
-undefined + 2 // NaN
+var result = 10 + "5"; // 隐式将数字和字符串相加，结果为字符串 "105"
+true == 1; // 隐式将布尔值转换为数字 1
+false == 0; // 隐式将布尔值转换为数字 0
+true + false; // 1
+true + "5"; // 隐式将布尔值转换为字符串，结果为 "true5"
+true + 2; // 3
+"5" * "2"; // 隐式将字符串转换为数字，结果为 10
+undefined + 2; // NaN
 ```
 
 ## 问题 13：js 的数据类型有哪些？
@@ -385,14 +421,14 @@ JavaScript 是浏览器的脚本语言，主要用途是<u>进行页面的一系
 - **`typeof` 操作符**：可以用来确定一个值的基本数据类型，返回一个表示数据类型的字符串。
 
 ```js
-typeof 42 // "number"
-typeof 'Hello' // "string"
-typeof true // "boolean"
-typeof undefined // "undefined"
-typeof null // "object" (这是 typeof 的一个常见的误解)
-typeof [1, 2, 3] // "object"
-typeof { key: 'value' } // "object"
-typeof function () {} // "function"
+typeof 42; // "number"
+typeof "Hello"; // "string"
+typeof true; // "boolean"
+typeof undefined; // "undefined"
+typeof null; // "object" (这是 typeof 的一个常见的误解)
+typeof [1, 2, 3]; // "object"
+typeof { key: "value" }; // "object"
+typeof function () {}; // "function"
 ```
 
 > 注意，typeof null 返回 "object" 是历史遗留问题，不是很准确。
@@ -400,35 +436,35 @@ typeof function () {} // "function"
 - **`Object.prototype.toString`**：用于获取更详细的数据类型信息。
 
 ```js
-Object.prototype.toString.call(42) // "[object Number]"
-Object.prototype.toString.call('Hello') // "[object String]"
-Object.prototype.toString.call(true) // "[object Boolean]"
-Object.prototype.toString.call(undefined) // "[object Undefined]"
-Object.prototype.toString.call(null) // "[object Null]"
-Object.prototype.toString.call([1, 2, 3]) // "[object Array]"
-Object.prototype.toString.call({ key: 'value' }) // "[object Object]"
-Object.prototype.toString.call(function () {}) // "[object Function]"
+Object.prototype.toString.call(42); // "[object Number]"
+Object.prototype.toString.call("Hello"); // "[object String]"
+Object.prototype.toString.call(true); // "[object Boolean]"
+Object.prototype.toString.call(undefined); // "[object Undefined]"
+Object.prototype.toString.call(null); // "[object Null]"
+Object.prototype.toString.call([1, 2, 3]); // "[object Array]"
+Object.prototype.toString.call({ key: "value" }); // "[object Object]"
+Object.prototype.toString.call(function () {}); // "[object Function]"
 ```
 
 - **`instanceof`** 操作符：用于检查对象是否属于某个类的实例。
 
 ```js
-var obj = {}
-obj instanceof Object // true
+var obj = {};
+obj instanceof Object; // true
 
-var arr = []
-arr instanceof Array // true
+var arr = [];
+arr instanceof Array; // true
 
 function Person() {}
-var person = new Person()
-person instanceof Person // true
+var person = new Person();
+person instanceof Person; // true
 ```
 
 - `Array.isArray` 方法：用于检查一个对象是否是数组。
 
 ```js
-Array.isArray([1, 2, 3]) // true
-Array.isArray('Hello') // false
+Array.isArray([1, 2, 3]); // true
+Array.isArray("Hello"); // false
 ```
 
 ## 问题 16：变量提升 & 函数提升（优先级）
@@ -464,12 +500,12 @@ console.log(s);
 - `null` 是原型链的顶层：所有对象都继承自 `Object` 原型对象，`Object` 原型对象的原型是 `null`。
 
 ```js
-const a = null
-console.log(a) // null
+const a = null;
+console.log(a); // null
 
-const obj = { a: 1 }
-const proto = obj.__proto__
-console.log(proto.__proto__) // null
+const obj = { a: 1 };
+const proto = obj.__proto__;
+console.log(proto.__proto__); // null
 ```
 
 **`undefined`**
@@ -480,19 +516,19 @@ console.log(proto.__proto__) // null
 - 如果函数的参数没有传递或没有被提供值，函数内的对应参数的值为 `undefined`。
 
 ```js
-let x
-console.log(x) // undefined
+let x;
+console.log(x); // undefined
 
-const obj = {}
-console.log(obj.property) // undefined
+const obj = {};
+console.log(obj.property); // undefined
 
 function exampleFunc() {}
-console.log(exampleFunc()) // undefined
+console.log(exampleFunc()); // undefined
 
 function add(a, b) {
-  return a + b
+  return a + b;
 }
-console.log(add(2)) // NaN
+console.log(add(2)); // NaN
 ```
 
 ## 问题 18：什么是内存泄漏
@@ -510,7 +546,7 @@ function someFunction() {
   // 这个变量会变成全局变量，并可能导致内存泄漏
   myObject = {
     /* ... */
-  }
+  };
 }
 ```
 
@@ -520,14 +556,14 @@ function someFunction() {
 function createClosure() {
   const data = [
     /* 大量数据 */
-  ]
+  ];
   return function () {
     // 闭包仍然持有对 'data' 的引用，即使它不再需要
-    console.log(data)
-  }
+    console.log(data);
+  };
 }
 
-const closureFunction = createClosure()
+const closureFunction = createClosure();
 // 当 'closureFunction' 不再需要时，它仍然保留着 'data' 的引用，导致内存泄漏。
 ```
 
@@ -535,12 +571,12 @@ const closureFunction = createClosure()
 
 ```js
 function createListener() {
-  const element = document.getElementById('someElement')
-  element.addEventListener('click', () => {
+  const element = document.getElementById("someElement");
+  element.addEventListener("click", () => {
     // ...
-  })
+  });
 }
-createListener()
+createListener();
 // 即使 'someElement' 从 DOM 中移除，该元素及其事件监听器仍将在内存中。
 ```
 
@@ -548,12 +584,12 @@ createListener()
 
 ```js
 function createCircularReferences() {
-  const obj1 = {}
-  const obj2 = {}
-  obj1.ref = obj2
-  obj2.ref = obj1
+  const obj1 = {};
+  const obj2 = {};
+  obj1.ref = obj2;
+  obj2.ref = obj1;
 }
-createCircularReferences()
+createCircularReferences();
 // 由于循环引用，'obj1' 和 'obj2' 都将保留在内存中。
 ```
 
@@ -563,13 +599,13 @@ createCircularReferences()
 function doSomethingRepeatedly() {
   const data = [
     /* 大量数据 */
-  ]
+  ];
   setInterval(() => {
     // 回调函数持有对 'data' 的引用，即使它不再需要
-    console.log(data)
-  }, 1000)
+    console.log(data);
+  }, 1000);
 }
-doSomethingRepeatedly()
+doSomethingRepeatedly();
 // 'doSomethingRepeatedly' 不再使用时，定时器仍然运行，导致内存泄漏。
 ```
 
@@ -586,20 +622,20 @@ doSomethingRepeatedly()
 ```js
 // 案例1
 const accumulation = function (initial) {
-  let result = initial
+  let result = initial;
   return function (value) {
-    result += value
-    return result
-  }
-}
+    result += value;
+    return result;
+  };
+};
 
 // 案例2
 for (var i = 0; i < 10; ++i) {
-  ;(function (index) {
+  (function (index) {
     setTimeout(function () {
-      console.log(index)
-    }, 1000)
-  })(i)
+      console.log(index);
+    }, 1000);
+  })(i);
 }
 ```
 
@@ -612,98 +648,98 @@ for (var i = 0; i < 10; ++i) {
 - Set：只允许存储唯一的值，可以将数组转换为 `Set`，然后再将 `Set` 转换回数组以去重。
 
 ```js
-const arr = [1, 2, 2, 3, 4, 4, 5]
-const uniqueArr = [...new Set(arr)]
+const arr = [1, 2, 2, 3, 4, 4, 5];
+const uniqueArr = [...new Set(arr)];
 ```
 
 - 利用 filter 方法: 遍历数组，只保留第一次出现的元素。
 
 ```js
-const arr = [1, 2, 2, 3, 4, 4, 5]
+const arr = [1, 2, 2, 3, 4, 4, 5];
 const uniqueArr = arr.filter(
   (value, index, self) => self.indexOf(value) === index
-)
+);
 ```
 
 - 使用 reduce 方法: 逐个遍历数组元素，构建一个新的数组，只添加第一次出现的元素。
 
 ```js
-const arr = [1, 2, 2, 3, 4, 4, 5]
+const arr = [1, 2, 2, 3, 4, 4, 5];
 const uniqueArr = arr.reduce((acc, current) => {
   if (!acc.includes(current)) {
-    acc.push(current)
+    acc.push(current);
   }
-  return acc
-}, [])
+  return acc;
+}, []);
 ```
 
 - 使用 indexOf 方法: 遍历数组，对于每个元素，检查其在数组中的索引，如果第一次出现，则添加到新数组。
 
 ```js
-const arr = [1, 2, 2, 3, 4, 4, 5]
-const uniqueArr = []
+const arr = [1, 2, 2, 3, 4, 4, 5];
+const uniqueArr = [];
 arr.forEach((value) => {
   if (uniqueArr.indexOf(value) === -1) {
-    uniqueArr.push(value)
+    uniqueArr.push(value);
   }
-})
+});
 ```
 
 - 使用 includes 方法: 类似于 indexOf 方法，只不过使用 includes 来检查元素是否已存在于新数组。
 
 ```js
-const arr = [1, 2, 2, 3, 4, 4, 5]
-const uniqueArr = []
+const arr = [1, 2, 2, 3, 4, 4, 5];
+const uniqueArr = [];
 arr.forEach((value) => {
   if (!uniqueArr.includes(value)) {
-    uniqueArr.push(value)
+    uniqueArr.push(value);
   }
-})
+});
 ```
 
 ## 问题 21：JS 数组 reduce 方法的使用
 
 ```js
 // 累加
-const result = [1, 2, 3].reduce((pre, cur) => pre + cur)
-console.log(result)
+const result = [1, 2, 3].reduce((pre, cur) => pre + cur);
+console.log(result);
 
 // 找最大值
-const result = [1, 2, 3, 2, 1].reduce((pre, cur) => Math.max(pre, cur))
-console.log(result)
+const result = [1, 2, 3, 2, 1].reduce((pre, cur) => Math.max(pre, cur));
+console.log(result);
 
 // 数组去重
 const resultList = [1, 2, 3, 2, 1].reduce((preList, cur) => {
   if (preList.indexOf(cur) === -1) {
-    preList.push(cur)
+    preList.push(cur);
   }
-  return preList
-}, [])
-console.log(resultList)
+  return preList;
+}, []);
+console.log(resultList);
 
 // 归类
 const dataList = [
-  { name: 'aa', country: 'China' },
-  { name: 'bb', country: 'China' },
-  { name: 'cc', country: 'USA' },
-  { name: 'dd', country: 'EN' }
-]
+  { name: "aa", country: "China" },
+  { name: "bb", country: "China" },
+  { name: "cc", country: "USA" },
+  { name: "dd", country: "EN" },
+];
 const resultObj = dataList.reduce((preObj, cur) => {
-  const { country } = cur
+  const { country } = cur;
   if (!preObj[country]) {
-    preObj[country] = []
+    preObj[country] = [];
   }
-  preObj[country].push(cur)
-  return preObj
-}, {})
-console.log(resultObj)
+  preObj[country].push(cur);
+  return preObj;
+}, {});
+console.log(resultObj);
 
 // 字符串反转
-const str = 'hello world'
+const str = "hello world";
 const resultStr = Array.from(str).reduce((pre, cur) => {
-  return `${cur}${pre}`
-}, '')
-console.log(resultStr)
+  return `${cur}${pre}`;
+}, "");
+console.log(resultStr);
 ```
 
 ## 问题 22：JS 数组、字符串常见操作方式及方法
@@ -717,36 +753,36 @@ for (const key in list) {
 }
 for (const item of list) {
 }
-list.forEach((item) => {}) // 仅遍历
-list.map((item) => {}) // 返回构造后的新数组
+list.forEach((item) => {}); // 仅遍历
+list.map((item) => {}); // 返回构造后的新数组
 
 // 逻辑判断
-list.every((item) => {}) // 全部返回 true 则函数返回 true
-list.some((item) => {}) // 有一项返回 true, 则函数返回 true, 内部 或 关系
+list.every((item) => {}); // 全部返回 true 则函数返回 true
+list.some((item) => {}); // 有一项返回 true, 则函数返回 true, 内部 或 关系
 
 // 过滤
-list.filter((item) => {}) // 返回过滤后的新数组
+list.filter((item) => {}); // 返回过滤后的新数组
 
 // 查找
-list.indexOf() // 第一个找到的位置，否则为 -1
-list.lastIndexOf() // 最后一个找到的位置，否则为 -1
-list.includes() // 接受一个参数，如果数组有目标值，则返回 true
-list.find() // 如果找到目标值，返回目标值，否则返回 undefined
-list.findIndex() // 如果找到目标值，返回下标，否则返回 -1
+list.indexOf(); // 第一个找到的位置，否则为 -1
+list.lastIndexOf(); // 最后一个找到的位置，否则为 -1
+list.includes(); // 接受一个参数，如果数组有目标值，则返回 true
+list.find(); // 如果找到目标值，返回目标值，否则返回 undefined
+list.findIndex(); // 如果找到目标值，返回下标，否则返回 -1
 
 // 拼接
-var arr = [1, 2, 3]
-arr.join('-') // 1-2-3
+var arr = [1, 2, 3];
+arr.join("-"); // 1-2-3
 
 // 新增
-arr.unshift(1) // 添加到数组头部
-arr.push(4) // 添加到数组尾部
-arr.splice(0, 0, 1) // 第一个入参是起始的索引值，第二个入参表示从起始索引开始需要删除的元素个数。 [1,1,2,3]
+arr.unshift(1); // 添加到数组头部
+arr.push(4); // 添加到数组尾部
+arr.splice(0, 0, 1); // 第一个入参是起始的索引值，第二个入参表示从起始索引开始需要删除的元素个数。 [1,1,2,3]
 
 // 删除
-const res = arr.shift() // 原[2,3] res为1 删除数组头部的元素，返回删除的元素
-arr.pop() // 删除数组尾部的元素
-arr.splice(1, 1) // [1,3] 删除数组任意位置的元素，返回的是删除的数组元素
+const res = arr.shift(); // 原[2,3] res为1 删除数组头部的元素，返回删除的元素
+arr.pop(); // 删除数组尾部的元素
+arr.splice(1, 1); // [1,3] 删除数组任意位置的元素，返回的是删除的数组元素
 
 // 排序
 /**
@@ -755,91 +791,91 @@ arr.splice(1, 1) // [1,3] 删除数组任意位置的元素，返回的是删除
  * 如果返回值大于 0，则 a 会被排在 b 之后。
  * a 和 b 是数组中任意两个元素
  */
-arr.sort((a, b) => a - b)
-arr.reverse() // 倒序
+arr.sort((a, b) => a - b);
+arr.reverse(); // 倒序
 
 // 合并 concat
-const arr1 = [1, 2, 3]
-const res = arr1.concat([4, 5]) // [1,2,3,4,5] 原数组不变，返回一个新数组
+const arr1 = [1, 2, 3];
+const res = arr1.concat([4, 5]); // [1,2,3,4,5] 原数组不变，返回一个新数组
 
 // 截取 slice 返回从原数组中指定开始下标到结束下标之间的项组成的新数组
-const arr = [1, 2, 3, 4, 5]
-const res = arr.slice(1) // [2,3,4,5] 在只有一个参数的情况下，返回从该参数指定位置开始到当前数组末尾的所有项。
-const res = arr.slice(1, 3) // [2,3] 如果有两个参数，该方法返回起始和结束位置之间的项，但不包括结束位置的项。
-const res = arr.slice(1, -2) // [2,3] 当出现负数时，将负数加上数组长度的值（5）来替换该位置的数，相当于 arr.slice(1,3)
+const arr = [1, 2, 3, 4, 5];
+const res = arr.slice(1); // [2,3,4,5] 在只有一个参数的情况下，返回从该参数指定位置开始到当前数组末尾的所有项。
+const res = arr.slice(1, 3); // [2,3] 如果有两个参数，该方法返回起始和结束位置之间的项，但不包括结束位置的项。
+const res = arr.slice(1, -2); // [2,3] 当出现负数时，将负数加上数组长度的值（5）来替换该位置的数，相当于 arr.slice(1,3)
 
 // 填充
-arr.fill(1) // 会覆盖原数组，全部填充为1
+arr.fill(1); // 会覆盖原数组，全部填充为1
 ```
 
 ### 字符串
 
 ```js
-const str = 'hello world'
+const str = "hello world";
 // 指定元素下标
-const res = str.charAt(1) // e
+const res = str.charAt(1); // e
 
 // 查找
-const res = str.indexOf('l') // 2 未找到返回 -1
-const res = str.includes('l') // true 判断字符串是否包含指定的子字符串
-const res = str.startsWith('l') // false 判断字符串是否以指定的子字符串开头
-const res = str.endsWith('l')
+const res = str.indexOf("l"); // 2 未找到返回 -1
+const res = str.includes("l"); // true 判断字符串是否包含指定的子字符串
+const res = str.startsWith("l"); // false 判断字符串是否以指定的子字符串开头
+const res = str.endsWith("l");
 
 // 连接
-const res = str.concat('!', 1) // hello world!1
+const res = str.concat("!", 1); // hello world!1
 
 // 字符串切割成数组
-const res = str.split(' ') // [ 'hello', 'world' ]
-const res = str.split('', 4) // [ 'h', 'e', 'l', 'l' ] 将前4个字符进行切割
-const res = str.split(' ').join('-') // hello-world
+const res = str.split(" "); // [ 'hello', 'world' ]
+const res = str.split("", 4); // [ 'h', 'e', 'l', 'l' ] 将前4个字符进行切割
+const res = str.split(" ").join("-"); // hello-world
 
 // 截取
-const res = str.slice(1,2) // e 开始下标，结束下标（不包括结束处的字符）
-const res = str.substr(1,2) // el 在字符串中抽取从开始下标开始的指定数目的字符
-const res = str.substring(1,2) // e 和 slice 一样
+const res = str.slice(1, 2); // e 开始下标，结束下标（不包括结束处的字符）
+const res = str.substr(1, 2); // el 在字符串中抽取从开始下标开始的指定数目的字符
+const res = str.substring(1, 2); // e 和 slice 一样
 
 // 替换
-const res = str.replace('l', 'L') // heLlo world 字符串替换，它只替换第一个匹配子串
+const res = str.replace("l", "L"); // heLlo world 字符串替换，它只替换第一个匹配子串
 
 // 移除空白
-str.trim()
-str.trimStart()
-str.trimEnd()
+str.trim();
+str.trimStart();
+str.trimEnd();
 
 // 字符串转数字
-const str = '123.45'
-const num1 = parseInt(str, [进制]) // 123 解析一个字符串，并返回一个整数
-const num2 = parseFloat(str) // 123.45 解析一个字符串，并返回一个浮点数
+const str = "123.45";
+const num1 = parseInt(str, [进制]); // 123 解析一个字符串，并返回一个整数
+const num2 = parseFloat(str); // 123.45 解析一个字符串，并返回一个浮点数
 ```
 
 ## 问题 23：如何遍历对象
 
 ```js
 // for in
-const obj = { a: 1, b: 2, c: 3 }
+const obj = { a: 1, b: 2, c: 3 };
 for (let key in obj) {
-  console.log(key, obj[key])
+  console.log(key, obj[key]);
 }
 
 // Object.keys
-const obj = { a: 1, b: 2, c: 3 }
-const keys = Object.keys(obj)
+const obj = { a: 1, b: 2, c: 3 };
+const keys = Object.keys(obj);
 keys.forEach((key) => {
-  console.log(key, obj[key])
-})
+  console.log(key, obj[key]);
+});
 
 // Object.entries
-const obj = { a: 1, b: 2, c: 3 }
-const entries = Object.entries(obj) // [ ['a', 1], ['b', 2], ['c', 3] ]
+const obj = { a: 1, b: 2, c: 3 };
+const entries = Object.entries(obj); // [ ['a', 1], ['b', 2], ['c', 3] ]
 entries.forEach(([key, value]) => {
-  console.log(key, value)
-})
+  console.log(key, value);
+});
 
 // Reflect.ownKeys
-const obj = { a: 1, b: 2, c: 3 }
+const obj = { a: 1, b: 2, c: 3 };
 Reflect.ownKeys(obj).forEach((key) => {
-  console.log(key, obj[key])
-})
+  console.log(key, obj[key]);
+});
 ```
 
 ## 问题 24：创建对象的方式
@@ -848,31 +884,31 @@ Reflect.ownKeys(obj).forEach((key) => {
 
 ```js
 var person = {
-  name: 'Alice',
+  name: "Alice",
   age: 30,
   sayHello: function () {
-    console.log('Hello!')
-  }
-}
+    console.log("Hello!");
+  },
+};
 ```
 
 - 构造函数（Constructor Function）：使用构造函数创建对象，通过 new 关键字调用以创建对象。
 
 ```js
 function Person(name, age) {
-  this.name = name
-  this.age = age
+  this.name = name;
+  this.age = age;
 }
 
-var person1 = new Person('Alice', 30)
+var person1 = new Person("Alice", 30);
 ```
 
 - Object.create() 方法：使用 Object.create() 方法创建对象，可以指定对象的原型。
 
 ```js
-var person = Object.create(null) // 创建一个空对象
-person.name = 'Alice'
-person.age = 30
+var person = Object.create(null); // 创建一个空对象
+person.name = "Alice";
+person.age = 30;
 ```
 
 - 类（ES6 中引入的类）：使用类定义对象，类是一种对象构造器的语法糖。
@@ -880,12 +916,12 @@ person.age = 30
 ```js
 class Person {
   constructor(name, age) {
-    this.name = name
-    this.age = age
+    this.name = name;
+    this.age = age;
   }
 }
 
-var person1 = new Person('Alice', 30)
+var person1 = new Person("Alice", 30);
 ```
 
 ## 问题 25：什么是作用域链
@@ -906,19 +942,19 @@ var person1 = new Person('Alice', 30)
 
 ```js
 function makeCounter() {
-  var count = 0
+  var count = 0;
   return function () {
-    count++
-    return count
-  }
+    count++;
+    return count;
+  };
 }
 
-var counter1 = makeCounter()
-var counter2 = makeCounter()
+var counter1 = makeCounter();
+var counter2 = makeCounter();
 
-console.log(counter1()) // 1
-console.log(counter1()) // 2
-console.log(counter2()) // 1，每个 counter 具有自己的作用域链，且都延长了 count 的作用域
+console.log(counter1()); // 1
+console.log(counter1()); // 2
+console.log(counter2()); // 1，每个 counter 具有自己的作用域链，且都延长了 count 的作用域
 ```
 
 ## 问题 27：事件冒泡和事件捕获的区别，如何阻止？
@@ -952,12 +988,12 @@ console.log(counter2()) // 1，每个 counter 具有自己的作用域链，且�
 示例：假设您有一个无序列表（`<ul>`）中的多个列表项（`<li>`），您希望在点击任何列表项时执行某些操作。您可以使用事件委托来处理这些点击事件，而不必为每个列表项单独添加事件处理程序。
 
 ```js
-const ulElement = document.querySelector('ul')
-ulElement.addEventListener('click', function (event) {
-  if (event.target.tagName === 'LI') {
+const ulElement = document.querySelector("ul");
+ulElement.addEventListener("click", function (event) {
+  if (event.target.tagName === "LI") {
     // 在这里执行点击列表项时的操作console.log("点击了列表项: " + event.target.textContent);
   }
-})
+});
 ```
 
 在上述示例中，事件委托将点击事件处理程序附加到了 `<ul>` 元素上，并使用 event.target 来确定被点击的列表项。这种方法使得单个事件处理程序能够处理整个列表的点击事件。
@@ -971,26 +1007,26 @@ ulElement.addEventListener('click', function (event) {
 ```js {7,11,15,19,22}
 class Calculator {
   constructor(num) {
-    this.value = num
+    this.value = num;
   }
   add(num) {
-    this.value += num
-    return this // 返回自身，以实现链式调用
+    this.value += num;
+    return this; // 返回自身，以实现链式调用
   }
   subtract(num) {
-    this.value -= num
-    return this
+    this.value -= num;
+    return this;
   }
   multiply(num) {
-    this.value *= num
-    return this
+    this.value *= num;
+    return this;
   }
   divide(num) {
-    this.value /= num
-    return this
+    this.value /= num;
+    return this;
   }
   getValue() {
-    return this.value
+    return this.value;
   }
 }
 const calculator = new Calculator(10)
@@ -998,23 +1034,23 @@ const calculator = new Calculator(10)
   .subtract(2)
   .multiply(3)
   .divide(4)
-  .getValue()
-console.log(calculator) // 输出 2.25
+  .getValue();
+console.log(calculator); // 输出 2.25
 ```
 
 ### Proxy 实现
 
 ```js
 function increase(num) {
-  return num + 1
+  return num + 1;
 }
 
 function decrease(num) {
-  return num - 1
+  return num - 1;
 }
 
 function double(num) {
-  return num * 2
+  return num * 2;
 }
 
 /**
@@ -1024,22 +1060,22 @@ function double(num) {
  */
 function chain(value) {}
 
-console.log(chain(3).increase.decrease.double.end)
+console.log(chain(3).increase.decrease.double.end);
 ```
 
 **解析：**
 
 ```js
 function increase(num) {
-  return num + 1
+  return num + 1;
 }
 
 function decrease(num) {
-  return num - 1
+  return num - 1;
 }
 
 function double(num) {
-  return num * 2
+  return num * 2;
 }
 
 /**
@@ -1051,20 +1087,20 @@ function chain(value) {
   const handler = {
     get(target, key) {
       // target：为代理对象，这里为 {value: xxx}；key：为变化 / 访问的值
-      if (key === 'end') {
-        return target.value
+      if (key === "end") {
+        return target.value;
       }
       if (window[key] instanceof Function) {
-        target.value = window[key](target.value)
-        return proxy
+        target.value = window[key](target.value);
+        return proxy;
       }
-    }
-  }
-  const proxy = new Proxy({ value }, handler)
-  return proxy
+    },
+  };
+  const proxy = new Proxy({ value }, handler);
+  return proxy;
 }
 
-console.log(chain(3).increase.decrease.double.end)
+console.log(chain(3).increase.decrease.double.end);
 ```
 
 ## 问题 30：for-in 和 for-of
@@ -1072,26 +1108,26 @@ console.log(chain(3).increase.decrease.double.end)
 **for-in**：遍历对象的可枚举属性（包括原型链上的属性）。
 
 ```js
-const obj = { a: 1, b: 2, c: 3 }
+const obj = { a: 1, b: 2, c: 3 };
 for (let key in obj) {
-  console.log(key) // 输出 "a", "b", "c"
+  console.log(key); // 输出 "a", "b", "c"
 }
 ```
 
 **for-of**：遍历可迭代对象（如数组、字符串、Map、Set 等）的值。
 
 ```js
-const arr = [1, 2, 3]
+const arr = [1, 2, 3];
 for (let value of arr) {
-  console.log(value) // 输出 1, 2, 3
+  console.log(value); // 输出 1, 2, 3
 }
 
 const map = [
-  ['a', 1],
-  ['b', 2]
-]
+  ["a", 1],
+  ["b", 2],
+];
 for (let [key, value] of map) {
-  console.log(key, value) // 输出 "a" 1, "b" 2
+  console.log(key, value); // 输出 "a" 1, "b" 2
 }
 ```
 
@@ -1145,129 +1181,129 @@ JS 中用 `栈` 的方式来管理执行上下文，遵循“先进后出，后�
 
 ```js
 // 通过 globalThis 可以获取全局对象（内置的）
-globalThis.a = 100
+globalThis.a = 100;
 function fn() {
-  console.log(this, 'fn this') // window，this指向全局对象
+  console.log(this, "fn this"); // window，this指向全局对象
   return {
     a: 200,
     m: function () {
-      console.log(this.a)
+      console.log(this.a);
     },
     n: () => {
-      console.log(this.a) // 外层作用域this => window
+      console.log(this.a); // 外层作用域this => window
     },
     k: function () {
       return function () {
-        console.log(this.a)
-      }
+        console.log(this.a);
+      };
     },
     l: function () {
       return () => {
-        console.log(this.a) // 外层作用域this => window
-      }
-    }
-  }
+        console.log(this.a); // 外层作用域this => window
+      };
+    },
+  };
 }
 
-const fn0 = fn()
-fn0.m() // 200，this指向当前对象
-fn0.n() // 100，this指向全局对象
-fn0.k()() /** 100
+const fn0 = fn();
+fn0.m(); // 200，this指向当前对象
+fn0.n(); // 100，this指向全局对象
+fn0.k()(); /** 100
 因为：第一次调用 fn0.k() 返回了一个匿名函数。
     第二次调用 () 执行这个匿名函数，**此时没有通过对象或方法调用来改变 this 的指向，所以 this 指向全局对象**。
 */
-fn0.l()() // 200，指向外层作用域 this为当前对象，所以箭头函数this指向当前对象
+fn0.l()(); // 200，指向外层作用域 this为当前对象，所以箭头函数this指向当前对象
 
-const context = { a: 300 }
-const fn1 = fn.call(context)
-fn1.m() // 输出：200，this指向调用他的对象，{a,m,n}
-fn1.n() // 输出：300，this指向外层，也就是 context 对象
-fn1.k().call(context) // 输出：300，this指向 context 对象
+const context = { a: 300 };
+const fn1 = fn.call(context);
+fn1.m(); // 输出：200，this指向调用他的对象，{a,m,n}
+fn1.n(); // 输出：300，this指向外层，也就是 context 对象
+fn1.k().call(context); // 输出：300，this指向 context 对象
 ```
 
 ### 例 2：
 
 ```js
-var name = 'globalName'
+var name = "globalName";
 
 const person1 = {
-  name: 'person1',
+  name: "person1",
   age: 18,
   foo1: function () {
-    console.log(this.name)
+    console.log(this.name);
   },
   foo2: () => {
-    console.log(this.name)
+    console.log(this.name);
   },
   foo3: function () {
     return function () {
-      console.log(this.name)
-    }
+      console.log(this.name);
+    };
   },
   foo4: function () {
-    console.log(this)
+    console.log(this);
     return () => {
-      console.log(this.name)
-    }
-  }
-}
+      console.log(this.name);
+    };
+  },
+};
 
 const person2 = {
-  name: 'person2'
-}
+  name: "person2",
+};
 
-person1.foo1()
-person1.foo1.call(person2)
+person1.foo1();
+person1.foo1.call(person2);
 
-person1.foo2()
-person1.foo2.call(person2)
+person1.foo2();
+person1.foo2.call(person2);
 
-person1.foo3()()
-person1.foo3.call(person2)()
+person1.foo3()();
+person1.foo3.call(person2)();
 
-person1.foo4()()
-person1.foo4.call(person2)()
+person1.foo4()();
+person1.foo4.call(person2)();
 ```
 
 **解析：**
 
 ```js
-var name = 'globalName'
+var name = "globalName";
 
 const person1 = {
-  name: 'person1',
+  name: "person1",
   age: 18,
   foo1: function () {
-    console.log(this.name)
+    console.log(this.name);
   },
   foo2: () => {
-    console.log(this.name)
+    console.log(this.name);
   },
   foo3: function () {
     return function () {
-      console.log(this.name)
-    }
+      console.log(this.name);
+    };
   },
   foo4: function () {
-    console.log(this)
+    console.log(this);
     return () => {
-      console.log(this.name)
-    }
-  }
-}
+      console.log(this.name);
+    };
+  },
+};
 
 const person2 = {
-  name: 'person2'
-}
+  name: "person2",
+};
 
-person1.foo1() // 输出：person1，this指向person1
-person1.foo1.call(person2) // 输出：person2，this指向person2（不会继承到person1的age属性）
+person1.foo1(); // 输出：person1，this指向person1
+person1.foo1.call(person2); // 输出：person2，this指向person2（不会继承到person1的age属性）
 
-person1.foo2() // 输出：globalName，this指向全局对象，即window
-person1.foo2.call(person2) // 输出：globalName，箭头函数的this是定义时决定的，call和apply不能改变它的this指向
+person1.foo2(); // 输出：globalName，this指向全局对象，即window
+person1.foo2.call(person2); // 输出：globalName，箭头函数的this是定义时决定的，call和apply不能改变它的this指向
 
-person1.foo3()() // 输出：globalName，相当于函数的直接调用，this指向全局
-person1.foo3.call(person2)() /**
+person1.foo3()(); // 输出：globalName，相当于函数的直接调用，this指向全局
+person1.foo3.call(person2)(); /**
  * 输出：globalName
  * 
 person1.foo3.call(person2)()
@@ -1276,53 +1312,53 @@ const fn = person1.foo3.call(person2)
 fn() // fn是全局window调用的，所以this指向全局
 */
 
-person1.foo4()() // 输出：person1，箭头函数this指向外层的this，外层this是person1
-person1.foo4.call(person2)() // 输出：person2，箭头函数this【继承】外层的this，外层的this通过call指向了person2
+person1.foo4()(); // 输出：person1，箭头函数this指向外层的this，外层this是person1
+person1.foo4.call(person2)(); // 输出：person2，箭头函数this【继承】外层的this，外层的this通过call指向了person2
 ```
 
 ### 例 3：
 
 ```js
-let length = 10
+let length = 10;
 
 function fn() {
-  return this.length + 1
+  return this.length + 1;
 }
 
 const obj = {
   length: 5,
   test1: function () {
-    return fn()
-  }
-}
+    return fn();
+  },
+};
 
-obj.test2 = fn
+obj.test2 = fn;
 
-console.log(obj.test1())
-console.log(obj.test2())
+console.log(obj.test1());
+console.log(obj.test2());
 ```
 
 **解析：**
 
 ```js
-let length = 10
+let length = 10;
 
 function fn() {
-  return this.length + 1
+  return this.length + 1;
 }
 
 const obj = {
   length: 5,
   test1: function () {
-    return fn()
-  }
-}
+    return fn();
+  },
+};
 
-obj.test2 = fn
+obj.test2 = fn;
 
 // window.length 返回窗口中框架的数量（包括 iframe 元素），没有为0
-console.log(obj.test1()) // 1，test1的this指向obj，此时没有通过对象或方法调用来改变 this 的指向，所以 this 指向全局对象
-console.log(obj.test2()) // 6，obj.test2调用fn，this指向为obj
+console.log(obj.test1()); // 1，test1的this指向obj，此时没有通过对象或方法调用来改变 this 的指向，所以 this 指向全局对象
+console.log(obj.test2()); // 6，obj.test2调用fn，this指向为obj
 ```
 
 ## 问题 32：call、apply、bind
@@ -1343,21 +1379,21 @@ console.log(obj.test2()) // 6，obj.test2调用fn，this指向为obj
 
 ```js
 function greet(name, age) {
-  console.log(name, age)
-  console.log(this, 'greet this')
+  console.log(name, age);
+  console.log(this, "greet this");
 }
 
 function Person(name) {
-  this.name = name
+  this.name = name;
 }
-const person = new Person('Alice')
+const person = new Person("Alice");
 
 /**
  * call
  * 参数1：thisArg，指定函数执行时的 this 值，这里指向 person
  * 剩余参数：传递给 greet函数 的具体参数，按顺序传入。
  */
-greet.call(person, 'Bob', 30)
+greet.call(person, "Bob", 30);
 ```
 
 ### 手写`call`方法
@@ -1367,22 +1403,22 @@ greet.call(person, 'Bob', 30)
 ```js
 // `call` 写在函数原型上
 Function.prototype.myCall = function (ctx, ...args) {
-  ctx = ctx || window // 默认为window
-  const key = Symbol() // 创建一个唯一键，避免属性名冲突
-  ctx[key] = this // 在上下文中添加一个属性，将函数赋值给这个属性（通过 this 获取到 greet 函数）
-  const result = ctx[key](...args) // 执行函数（cxt上下文调用后，函数的this就指向ctx）
-  delete ctx[key] // 删除属性
-  return result
-}
+  ctx = ctx || window; // 默认为window
+  const key = Symbol(); // 创建一个唯一键，避免属性名冲突
+  ctx[key] = this; // 在上下文中添加一个属性，将函数赋值给这个属性（通过 this 获取到 greet 函数）
+  const result = ctx[key](...args); // 执行函数（cxt上下文调用后，函数的this就指向ctx）
+  delete ctx[key]; // 删除属性
+  return result;
+};
 
 function greet(name) {
-  console.log(name)
-  console.log(this)
+  console.log(name);
+  console.log(this);
 }
 const person = {
-  name: 'Alice'
-}
-greet.myCall(person, 'wifi')
+  name: "Alice",
+};
+greet.myCall(person, "wifi");
 
 /**
  * - myCall的this指向？
@@ -1409,21 +1445,21 @@ greet.hello()
 
 ```js
 function greet(name, age) {
-  console.log(name, age)
-  console.log(this, 'greet this')
+  console.log(name, age);
+  console.log(this, "greet this");
 }
 
 function Person(name) {
-  this.name = name
+  this.name = name;
 }
-const person = new Person('Alice')
+const person = new Person("Alice");
 
 /**
  * apply
  * 参数1：thisArg，指定函数执行时的 this 值，这里指向 person
  * 参数2：数组，将数组的每一项按顺序传递给 greet函数。
  */
-greet.apply(person, ['wifi', 30])
+greet.apply(person, ["wifi", 30]);
 ```
 
 > `apply` 和 `call` 的区别：
@@ -1436,13 +1472,13 @@ greet.apply(person, ['wifi', 30])
 
 ```js
 Function.prototype.myApply = function (ctx, args) {
-  ctx = ctx || window // 默认为window
-  const key = Symbol() // 创建一个唯一键，避免属性名冲突
-  ctx[key] = this // 在上下文中添加一个属性，将函数赋值给这个属性
-  const result = ctx[key](...args) // 执行函数
-  delete ctx[key] // 删除属性
-  return result
-}
+  ctx = ctx || window; // 默认为window
+  const key = Symbol(); // 创建一个唯一键，避免属性名冲突
+  ctx[key] = this; // 在上下文中添加一个属性，将函数赋值给这个属性
+  const result = ctx[key](...args); // 执行函数
+  delete ctx[key]; // 删除属性
+  return result;
+};
 ```
 
 ### bind
@@ -1455,33 +1491,33 @@ Function.prototype.myApply = function (ctx, args) {
 
 ```js
 function greet(name, age) {
-  console.log(name, age)
-  console.log(this)
+  console.log(name, age);
+  console.log(this);
 }
 
 function Person(name) {
-  this.name = name
+  this.name = name;
 }
-const person = new Person('Alice')
+const person = new Person("Alice");
 
 // greet 函数的 this 指向 person
-const greetBind = greet.bind(person)
-greetBind('Alice', 18)
+const greetBind = greet.bind(person);
+greetBind("Alice", 18);
 
 // 柯里化写法
-greet.bind(person)('Alice', 18)
+greet.bind(person)("Alice", 18);
 ```
 
 ### 手写`bind`方法
 
 ```js
 Function.prototype.myBind = function (ctx, ...args) {
-  const fn = this
+  const fn = this;
   return function (...newArgs) {
-    fn.apply(ctx, [...args, ...newArgs])
+    fn.apply(ctx, [...args, ...newArgs]);
     // fn.call(ctx, ...args, ...newArgs)
-  }
-}
+  };
+};
 ```
 
 ### 总结
@@ -1491,13 +1527,16 @@ Function.prototype.myBind = function (ctx, ...args) {
 
 ## 问题 33：原型链和原型对象
 
+原型是函数自带的 prototype 属性，指向一个原型对象（存放有共享属性 / 方法的普通对象）；原型对象也有原型，一层一层向上直到 Object.prototype 是 null，这样逐层形成的结构即是原型链。
+每个对象实例的隐藏属性 **proto** 指向其构造函数的原型对象，这些通过 **proto** 连接的层级结构形成原型链，用于对象访问属性时逐层向上查找（从自身到原型对象，直至 Object.prototype 或 null）。
+
 ### 原型对象 prototype
 
 ```js
 function test(name) {
-  this.name = name
+  this.name = name;
 }
-console.log(test.prototype)
+console.log(test.prototype);
 ```
 
 `prototype` 是**函数**的一个属性（每个函数都有一个 `prototype` 属性），这个属性是一个对象，叫做 `原型对象`。当我们创建函数的时候，会默认添加 `prototype` 属性。
@@ -1508,12 +1547,12 @@ console.log(test.prototype)
 
 ```js
 function test(name) {
-  this.name = name
+  this.name = name;
 }
 
-console.log('test.prototype🌍', test.prototype)
-console.log('test🌍', test)
-console.log('test.prototype.constructor🌍', test.prototype.constructor)
+console.log("test.prototype🌍", test.prototype);
+console.log("test🌍", test);
+console.log("test.prototype.constructor🌍", test.prototype.constructor);
 ```
 
 <img src="./img/原型constructor.png" alt="原型constructor" style="zoom:50%;" />
@@ -1530,13 +1569,13 @@ console.log('test.prototype.constructor🌍', test.prototype.constructor)
 
 ```js
 function test(name) {
-  this.name = name
+  this.name = name;
 }
 
-const obj = new test('wifi')
-console.log(obj.__proto__ === test.prototype) // true
-console.log(test.prototype.__proto__ === Object.prototype) // true
-console.log(Object.prototype.__proto__) // null
+const obj = new test("wifi");
+console.log(obj.__proto__ === test.prototype); // true
+console.log(test.prototype.__proto__ === Object.prototype); // true
+console.log(Object.prototype.__proto__); // null
 
 /**
  * obj {
@@ -1559,13 +1598,13 @@ console.log(Object.prototype.__proto__) // null
 
 ```js
 function test(name) {
-  this.name = name
+  this.name = name;
 }
 
-const obj = new test('wifi')
-obj.a = 1
-test.prototype.b = 2
-Object.prototype.c = 3
+const obj = new test("wifi");
+obj.a = 1;
+test.prototype.b = 2;
+Object.prototype.c = 3;
 /**
  * 原型链
  * obj {
@@ -1581,7 +1620,7 @@ Object.prototype.c = 3
  */
 
 for (const key in obj) {
-  console.log(key) // name a b c
+  console.log(key); // name a b c
 }
 ```
 
@@ -1590,14 +1629,14 @@ for (const key in obj) {
 ```js
 // 方法1
 Object.keys(obj).forEach((key) => {
-  console.log(key) // name a
-})
+  console.log(key); // name a
+});
 
 // 方法2
 for (const key in obj) {
   // 判断属性是否存在于自身，而不是在原型对象上
   if (obj.hasOwnProperty(key)) {
-    console.log(key) // name a
+    console.log(key); // name a
   }
 }
 ```
@@ -1607,20 +1646,20 @@ for (const key in obj) {
 ```js
 const Foo = function () {
   this.a = function () {
-    console.log(1)
-  }
-}
+    console.log(1);
+  };
+};
 
 Foo.prototype.a = function () {
-  console.log(2)
-}
+  console.log(2);
+};
 
 Foo.a = function () {
-  console.log(3)
-}
+  console.log(3);
+};
 
-let foo = new Foo()
-foo.a()
+let foo = new Foo();
+foo.a();
 ```
 
 输出：1
@@ -1635,22 +1674,22 @@ foo.a()
 const Foo = function () {
   this.a = function () {
     // this 指向 foo，所以 foo.a 就是自身的方法
-    console.log(1)
-  }
-}
+    console.log(1);
+  };
+};
 
 Foo.prototype.a = function () {
   // 方法在Foo的原型上
-  console.log(2)
-}
+  console.log(2);
+};
 
 Foo.a = function () {
   // 静态方法，是通过 `Foo.a()` 直接调用执行的
-  console.log(3)
-}
+  console.log(3);
+};
 
-let foo = new Foo()
-foo.a() // 输出：1
+let foo = new Foo();
+foo.a(); // 输出：1
 ```
 
 ## 问题 34：继承
@@ -1662,15 +1701,15 @@ foo.a() // 输出：1
 ```js
 class Animal {
   constructor(name) {
-    this.name = name
+    this.name = name;
   }
 }
 
 class Dog extends Animal {
   constructor(name, age) {
     // super 调用父类的构造函数
-    super(name)
-    this.age = age
+    super(name);
+    this.age = age;
   }
 }
 ```
@@ -1681,37 +1720,37 @@ class Dog extends Animal {
 
 ```js
 function Animal(name) {
-  this.name = name
+  this.name = name;
 }
 
 Animal.prototype.say = function () {
-  console.log('Animal say: ', this.name)
-}
+  console.log("Animal say: ", this.name);
+};
 
 function Dog(age) {
-  this.age = age
+  this.age = age;
 }
 
-Dog.prototype = new Animal('dog')
-const myDog = new Dog(2)
-myDog.say() // Animal say: dog
+Dog.prototype = new Animal("dog");
+const myDog = new Dog(2);
+myDog.say(); // Animal say: dog
 ```
 
 ### 构造函数继承
 
 ```js
 function Animal(name) {
-  this.name = name
+  this.name = name;
 }
 
 function Dog(name, age) {
-  Animal.call(this, name) // 使用构造函数继承，继承属性
+  Animal.call(this, name); // 使用构造函数继承，继承属性
   // Animal.bind(this, name)()
-  this.age = age
+  this.age = age;
 }
 
-let myDog = new Dog('旺财', 2)
-console.log(myDog) // Dog { name: '旺财', age: 2 }
+let myDog = new Dog("旺财", 2);
+console.log(myDog); // Dog { name: '旺财', age: 2 }
 ```
 
 `Dog` 构造函数内部调用了 `Animal` 构造函数，继承了 `Animal` 的属性和方法。
@@ -1722,15 +1761,15 @@ console.log(myDog) // Dog { name: '旺财', age: 2 }
 
 ```js
 function Test(name) {
-  this.name = name
+  this.name = name;
 }
 
 // 追加方法
 Test.prototype.getName = function () {
-  return this.name
-}
+  return this.name;
+};
 
-let test = new Test('test') // Test { name: 'test' }
+let test = new Test("test"); // Test { name: 'test' }
 ```
 
 ### new 操作符做了什么
@@ -1742,8 +1781,8 @@ let test = new Test('test') // Test { name: 'test' }
 // 在 Test 构造函数上能添加原型方法，所以需要改变（空）对象的原型
 // obj.__proto__ = Obj.prototype（建立原型链联系）
 Test.prototype.getName = function () {
-  return this.name
-}
+  return this.name;
+};
 ```
 
 3. 将空对象作为构造函数的上下文（就是改变 this 的指向）
@@ -1754,24 +1793,24 @@ Test.prototype.getName = function () {
 
 ```js
 function Foo() {
-  this.name = 'wifi'
-  return {}
+  this.name = "wifi";
+  return {};
 }
-console.log(new Foo()) // {}
+console.log(new Foo()); // {}
 
 function Foo2() {
-  this.name = 'wifi'
-  return 123
+  this.name = "wifi";
+  return 123;
 }
-console.log(new Foo2()) // {name: "wifi"}
+console.log(new Foo2()); // {name: "wifi"}
 ```
 
 ### 手写 new 操作符
 
 ```js
 function Person(name, age) {
-  this.name = name
-  this.age = age
+  this.name = name;
+  this.age = age;
 }
 
 function myNew(constructor, ...args) {
@@ -1782,15 +1821,15 @@ function myNew(constructor, ...args) {
    * obj.__proto__ = constructor.prototype
    */
   // Object.create() 静态方法以一个现有对象作为原型，创建一个新对象。
-  const obj = Object.create(constructor.prototype)
+  const obj = Object.create(constructor.prototype);
   // 3. 将空对象作为构造函数的上下文（就是改变this的指向）
-  const result = constructor.apply(obj, args)
+  const result = constructor.apply(obj, args);
   // 4. 对构造函数有返回值的处理判断（如果构造函数返回值是基本类型，就忽略返回值；如果是引用类型，则使用该返回值）
-  return result instanceof Object ? result : obj
+  return result instanceof Object ? result : obj;
 }
 
-const p = myNew(Person, 'wifi', 18)
-console.log(p)
+const p = myNew(Person, "wifi", 18);
+console.log(p);
 ```
 
 ## 问题 36：call 和 apply 的链式调用
@@ -1801,7 +1840,7 @@ console.log(p)
 const r = console.log.call.call.call.call.call.call.call.call.apply(
   (a) => a,
   [1, 2]
-)
+);
 ```
 
 解析：
@@ -1815,20 +1854,20 @@ console.log.call.call === Function.prototype.call
 const r = console.log.call.call.call.call.call.call.call.call.apply(
   (a) => a,
   [1, 2]
-)
+);
 
 // r可以转成：
-const r1 = Function.prototype.call.apply((a) => a, [1, 2])
+const r1 = Function.prototype.call.apply((a) => a, [1, 2]);
 /**
  * Function.prototype.call也是一个函数
  * 函数.apply(xxx, [...args]) => xxx.函数(...args) ，函数为call
  * (a) => a => xxx
  */
 // r1可以转成：
-const fn = (a) => a
-const r2 = fn.call(1, 2)
+const fn = (a) => a;
+const r2 = fn.call(1, 2);
 
-console.log(r2) // 2
+console.log(r2); // 2
 ```
 
 ## 问题 37：Symbol 特性与作用
@@ -1840,17 +1879,17 @@ console.log(r2) // 2
 3. **用作属性名**：主要用途是作为对象属性的键，以确保属性的唯一性。
 
 ```js
-const mySymbol = Symbol('mySymbol')
+const mySymbol = Symbol("mySymbol");
 const obj = {
-  [mySymbol]: '这是Symbol作为属性名的值'
-}
+  [mySymbol]: "这是Symbol作为属性名的值",
+};
 ```
 
 4. **Symbol 常量**：在代码中，可以使用 Symbol 来定义常量，以避免意外的值修改。
 
 ```js
-const COLOR_RED = Symbol('red')
-const COLOR_GREEN = Symbol('green')
+const COLOR_RED = Symbol("red");
+const COLOR_GREEN = Symbol("green");
 ```
 
 ## 问题 38：JS 监听对象属性的改变
@@ -1859,33 +1898,33 @@ const COLOR_GREEN = Symbol('green')
 
 ```js
 const person = {
-  firstName: 'John',
-  lastName: 'Doe'
-}
+  firstName: "John",
+  lastName: "Doe",
+};
 
 // 监听属性 "firstName"
-Object.defineProperty(person, 'firstName', {
+Object.defineProperty(person, "firstName", {
   get() {
-    return this._firstName
+    return this._firstName;
   },
   set(value) {
-    this._firstName = value
-    console.log(`firstName 改变为: ${value}`)
+    this._firstName = value;
+    console.log(`firstName 改变为: ${value}`);
   },
-  configurable: true // 允许属性重新定义
-})
+  configurable: true, // 允许属性重新定义
+});
 
 // 修改属性 "firstName" 会触发监听
-person.firstName = 'Alice' // 输出："firstName 改变为: Alice"
+person.firstName = "Alice"; // 输出："firstName 改变为: Alice"
 ```
 
 - **Proxy**
 
 ```js
 const person = {
-  firstName: 'John',
-  lastName: 'Doe'
-}
+  firstName: "John",
+  lastName: "Doe",
+};
 
 const handler = {
   /**
@@ -1894,19 +1933,19 @@ const handler = {
    * value： 设置的值
    */
   get(target, property) {
-    console.log(`访问了属性 ${property}`)
-    return target[property]
+    console.log(`访问了属性 ${property}`);
+    return target[property];
   },
   set(target, property, value) {
-    console.log(`设置属性 ${property} 为 ${value}`)
-    target[property] = value
-    return true
-  }
-}
+    console.log(`设置属性 ${property} 为 ${value}`);
+    target[property] = value;
+    return true;
+  },
+};
 
-const proxyPerson = new Proxy(person, handler)
-console.log(proxyPerson.firstName) // 输出: "访问了属性 firstName", 然后输出 "John"
-proxyPerson.lastName = 'Smith' // 输出: "设置属性 lastName 为 Smith"
+const proxyPerson = new Proxy(person, handler);
+console.log(proxyPerson.firstName); // 输出: "访问了属性 firstName", 然后输出 "John"
+proxyPerson.lastName = "Smith"; // 输出: "设置属性 lastName 为 Smith"
 ```
 
 ## 问题 39：要执行 100 万个任务，如何优化?
@@ -1919,33 +1958,33 @@ proxyPerson.lastName = 'Smith' // 输出: "设置属性 lastName 为 Smith"
 在 `requestIdleCallback` 中，浏览器会等待主线程空闲的时间，然后执行部分任务。
 
 ```js
-const total = 1000 // 定义需要生成的函数数量，即1000个任务
-const arr = [] // 存储任务函数的数组
+const total = 1000; // 定义需要生成的函数数量，即1000个任务
+const arr = []; // 存储任务函数的数组
 
 // 生成1000个函数并将其添加到数组中
 function generateArr() {
   for (let i = 0; i < total; i++) {
     // 每个函数的作用是将一个 <div> 元素插入到页面的 body 中
     arr.push(function () {
-      document.body.innerHTML += `<div>${i + 1}</div>` // 将当前索引 + 1 作为内容
-    })
+      document.body.innerHTML += `<div>${i + 1}</div>`; // 将当前索引 + 1 作为内容
+    });
   }
 }
-generateArr() // 调用函数生成任务数组
+generateArr(); // 调用函数生成任务数组
 
 // 用于调度和执行任务的函数
 function workLoop(deadline) {
   // 检查当前空闲时间是否大于1毫秒，并且任务数组中还有任务未执行
   if (deadline.timeRemaining() > 1 && arr.length > 0) {
-    const fn = arr.shift() // 从任务数组中取出第一个函数
-    fn() // 执行该函数，即插入对应的 <div> 元素到页面中
+    const fn = arr.shift(); // 从任务数组中取出第一个函数
+    fn(); // 执行该函数，即插入对应的 <div> 元素到页面中
   }
   // 再次使用 requestIdleCallback 调度下一个空闲时间执行任务
-  requestIdleCallback(workLoop)
+  requestIdleCallback(workLoop);
 }
 
 // 开始调度任务，在浏览器空闲时执行 workLoop
-requestIdleCallback(workLoop, { timeout: 1000 })
+requestIdleCallback(workLoop, { timeout: 1000 });
 ```
 
 ### setTimeout
@@ -1988,13 +2027,13 @@ requestIdleCallback(workLoop, { timeout: 1000 })
       }
     </style>
     <script type="text/javascript">
-      const worker = new Worker('./worker.js')
+      const worker = new Worker("./worker.js");
       worker.onmessage = function (res) {
-        console.log('length: ', res.data)
-      }
+        console.log("length: ", res.data);
+      };
       setTimeout(() => {
-        worker.postMessage({})
-      }, 1000)
+        worker.postMessage({});
+      }, 1000);
     </script>
   </head>
   <body>
@@ -2006,12 +2045,12 @@ requestIdleCallback(workLoop, { timeout: 1000 })
 ```js
 // worker.js
 self.onmessage = function (req) {
-  const list = []
+  const list = [];
   for (let i = 0; i < 100000000; ++i) {
-    list.push(Date.now())
+    list.push(Date.now());
   }
-  self.postMessage(list.length)
-}
+  self.postMessage(list.length);
+};
 ```
 
 ## 问题 40：后端响应巨量数据，如何避免其性能问题？
@@ -2035,9 +2074,9 @@ self.onmessage = function (req) {
 
 ```js
 // 方法1
-const num = (0.1 * 100 + 0.2 * 100) / 100
+const num = (0.1 * 100 + 0.2 * 100) / 100;
 // 方法2
-const num = (0.1 + 0.2).toFixed(1)
+const num = (0.1 + 0.2).toFixed(1);
 ```
 
 ## 问题 42：插件化（微内核）
@@ -2045,42 +2084,42 @@ const num = (0.1 + 0.2).toFixed(1)
 ```js
 class Doc {
   constructor() {
-    this.plugins = []
+    this.plugins = [];
   }
 
   use(plugin) {
-    this.plugins.push(plugin)
+    this.plugins.push(plugin);
   }
 
   run() {
     this.plugins.forEach((plugin) => {
-      plugin.fn(this) // this => doc构造函数
-    })
+      plugin.fn(this); // this => doc构造函数
+    });
   }
 }
 
-const doc = new Doc()
+const doc = new Doc();
 
 // 定义插件协议
 const textPlugin = {
-  name: 'text',
+  name: "text",
   fn(doc) {
-    console.log(doc, 'text')
-    return 'text'
-  }
-}
+    console.log(doc, "text");
+    return "text";
+  },
+};
 const imagePlugin = {
-  name: 'image',
+  name: "image",
   fn(doc) {
-    console.log(doc, 'image')
-    return 'image'
-  }
-}
+    console.log(doc, "image");
+    return "image";
+  },
+};
 
-doc.use(textPlugin)
-doc.use(imagePlugin)
+doc.use(textPlugin);
+doc.use(imagePlugin);
 
-doc.run()
+doc.run();
 ```
 
 ## 问题 43：为什么 setTimeout(setInterval)不精确？如何解决？
@@ -2097,24 +2136,24 @@ doc.run()
 
 ```js
 function preciseTimeout(callback, delay) {
-  const start = performance.now()
+  const start = performance.now();
 
   function check() {
-    const elapsed = performance.now() - start
+    const elapsed = performance.now() - start;
     if (elapsed >= delay) {
-      callback()
+      callback();
     } else {
-      setTimeout(check, delay - elapsed)
+      setTimeout(check, delay - elapsed);
     }
   }
 
-  setTimeout(check, delay)
+  setTimeout(check, delay);
 }
 
 // 使用示例
 preciseTimeout(() => {
-  console.log('This is a more precise timeout')
-}, 1000)
+  console.log("This is a more precise timeout");
+}, 1000);
 ```
 
 2. 使用 `requestAnimationFrame` 进行微调
@@ -2125,47 +2164,47 @@ preciseTimeout(() => {
 
 ```js [setTimeout]
 function preciseTimeout(callback, delay) {
-  const start = performance.now()
+  const start = performance.now();
 
   function check(currentTime) {
     // currentTime 上一帧渲染的结束时间
-    const elapsed = currentTime - start
+    const elapsed = currentTime - start;
     if (elapsed >= delay) {
-      callback()
+      callback();
     } else {
-      requestAnimationFrame(check)
+      requestAnimationFrame(check);
     }
   }
 
-  requestAnimationFrame(check)
+  requestAnimationFrame(check);
 }
 
 // 使用示例
 preciseTimeout(() => {
-  console.log('This is a more precise timeout using requestAnimationFrame')
-}, 1000)
+  console.log("This is a more precise timeout using requestAnimationFrame");
+}, 1000);
 ```
 
 ```js [setInterval]
 function preciseAnimation(callback, delay) {
-  let lastTime = performance.now()
+  let lastTime = performance.now();
   function animate(timestamp) {
-    const deltaTime = timestamp - lastTime // 获取当前时间和上次执行的时间差
+    const deltaTime = timestamp - lastTime; // 获取当前时间和上次执行的时间差
     if (deltaTime >= delay) {
       // 每 delay 毫秒执行一次
-      callback()
-      lastTime = timestamp
+      callback();
+      lastTime = timestamp;
     }
-    requestAnimationFrame(animate) // 请求下一帧
+    requestAnimationFrame(animate); // 请求下一帧
   }
 
-  requestAnimationFrame(animate)
+  requestAnimationFrame(animate);
 }
 
 // 示例：每 1s 执行一次任务
 preciseAnimation(() => {
-  console.log('执行任务', Date.now())
-}, 1000)
+  console.log("执行任务", Date.now());
+}, 1000);
 ```
 
 :::
@@ -2182,11 +2221,11 @@ preciseAnimation(() => {
   </head>
   <body>
     <script>
-      const worker = new Worker('worker.js')
-      worker.postMessage('start')
+      const worker = new Worker("worker.js");
+      worker.postMessage("start");
       worker.onmessage = function (event) {
-        console.log('This is a more precise timeout using Web Worker')
-      }
+        console.log("This is a more precise timeout using Web Worker");
+      };
     </script>
   </body>
 </html>
@@ -2196,9 +2235,9 @@ preciseAnimation(() => {
 // worker.js
 self.onmessage = function () {
   setInterval(() => {
-    postMessage('任务完成')
-  }, 1000) // 使用 setInterval，Web Worker 中执行任务不会阻塞主线程
-}
+    postMessage("任务完成");
+  }, 1000); // 使用 setInterval，Web Worker 中执行任务不会阻塞主线程
+};
 ```
 
 ## 问题 44：requestAnimationFrame 和 requestIdleCallback 的区别？
@@ -2211,8 +2250,8 @@ self.onmessage = function () {
 ```js
 requestAnimationFrame((timestamp) => {
   // 时间戳参数，表示当前帧开始的时间
-  console.log(timestamp)
-})
+  console.log(timestamp);
+});
 ```
 
 ### requestIdleCallback
@@ -2232,8 +2271,8 @@ requestAnimationFrame((timestamp) => {
 requestIdleCallback(({ didTimeout, timeRemaining }) => {
   // didTimeout 表示是否因为超时而被调用
   // timeRemaining() 返回浏览器空闲时间剩余的毫秒数，可用于判断是否有足够的时间执行任务。
-  console.log(didTimeout, timeRemaining())
-})
+  console.log(didTimeout, timeRemaining());
+});
 ```
 
 ### 总结：
@@ -2255,15 +2294,15 @@ requestIdleCallback(({ didTimeout, timeRemaining }) => {
   </head>
   <body>
     <script>
-      const baseUrl = 'http://127.0.0.1:7878/api'
-      const urls = []
+      const baseUrl = "http://127.0.0.1:7878/api";
+      const urls = [];
       for (let i = 0; i <= 20; i++) {
-        urls.push(`${baseUrl}/${i}`)
+        urls.push(`${baseUrl}/${i}`);
       }
       // 并发请求
       concurRequest(urls, 5).then((responses) => {
-        console.log(responses)
-      })
+        console.log(responses);
+      });
 
       /**
        * 并发请求
@@ -2272,7 +2311,7 @@ requestIdleCallback(({ didTimeout, timeRemaining }) => {
        * @return {Promise<any[]>} 返回Promise数组，请求结果是按urls数组顺序
        */
       function concurRequest(urls, maxNum) {
-        return
+        return;
       }
     </script>
   </body>
@@ -2280,21 +2319,21 @@ requestIdleCallback(({ didTimeout, timeRemaining }) => {
 ```
 
 ```js [server.js]
-const express = require('express')
-const app = express()
-const cors = require('cors')
-app.use(cors())
-app.get('/api/:id', (req, res) => {
+const express = require("express");
+const app = express();
+const cors = require("cors");
+app.use(cors());
+app.get("/api/:id", (req, res) => {
   res.json({
     status: 200,
-    msg: 'success',
-    data: req.params.id
-  })
-})
+    msg: "success",
+    data: req.params.id,
+  });
+});
 
 app.listen(7878, () => {
-  console.log('server启动成功')
-})
+  console.log("server启动成功");
+});
 ```
 
 :::
@@ -2310,39 +2349,39 @@ app.listen(7878, () => {
  */
 function concurRequest(urls, maxNum) {
   if (urls.length === 0) {
-    return Promise.resolve([])
+    return Promise.resolve([]);
   }
   return new Promise((resolve) => {
     // 下一个请求下标
-    let nextIndex = 0
+    let nextIndex = 0;
     // 存放请求完成后的结果
-    const result = []
+    const result = [];
     // 完成的请求个数
-    let finishCount = 0
+    let finishCount = 0;
     // 用于单次请求
     async function _request() {
       if (nextIndex >= urls.length) {
-        return
+        return;
       }
-      const url = urls[nextIndex]
+      const url = urls[nextIndex];
       // 当前请求下标
-      const index = nextIndex
-      nextIndex++
-      const response = await fetch(url)
-      console.log(response)
-      result[index] = response
-      finishCount++
+      const index = nextIndex;
+      nextIndex++;
+      const response = await fetch(url);
+      console.log(response);
+      result[index] = response;
+      finishCount++;
       if (finishCount === urls.length) {
-        resolve(result)
+        resolve(result);
       }
       // 当前请求结束，进入另一个请求补位
-      _request()
+      _request();
     }
 
     for (let i = 0; i < Math.min(maxNum, urls.length); i++) {
-      _request()
+      _request();
     }
-  })
+  });
 }
 ```
 
@@ -2356,7 +2395,7 @@ function concurRequest(urls, maxNum) {
 
 ```js
 while (1) {
-  console.log(1)
+  console.log(1);
 }
 ```
 
@@ -2366,7 +2405,7 @@ while (1) {
 
 ```js
 while (1) {
-  await 1
+  await 1;
 }
 ```
 
@@ -2377,12 +2416,12 @@ while (1) {
 ```js
 function delay(duration = 1000) {
   return new Promise((resolve) => {
-    setTimeout(resolve, duration)
-  })
+    setTimeout(resolve, duration);
+  });
 }
 
 while (1) {
-  await delay(0)
+  await delay(0);
 }
 ```
 
@@ -2396,9 +2435,9 @@ while (1) {
 
 ```js
 function m() {
-  m()
+  m();
 }
-m()
+m();
 ```
 
 > 栈溢出，报错
@@ -2454,8 +2493,8 @@ JWT（JSON Web Token）,它由三部分组成：头部（header）、负载（pa
 ## 问题 48：parseFloat 和 Number 的区别
 
 ```js
-console.log(parseFloat('1.23abc')) // 1.23
-console.log(Number('1.23abc')) // NaN
+console.log(parseFloat("1.23abc")); // 1.23
+console.log(Number("1.23abc")); // NaN
 ```
 
 ## 问题 49：数字的哪些会四舍五入？
@@ -2464,15 +2503,15 @@ console.log(Number('1.23abc')) // NaN
 - **Math.floor**：对数字进行向下取整（向负无穷方向舍入）
 
 ```js
-console.log(Math.floor(123.999)) // 123
-console.log(Math.floor(-123.999)) // 124
+console.log(Math.floor(123.999)); // 123
+console.log(Math.floor(-123.999)); // 124
 ```
 
 - **.toFixed**：将数字转为字符串，并指定小数位数，同时对小数部分进行四舍五入。
 
 ```js
-let num = 123.456
-console.log(num.toFixed(2)) // "123.46"
+let num = 123.456;
+console.log(num.toFixed(2)); // "123.46"
 ```
 
 ## 问题 50：防抖 和 节流
@@ -2487,22 +2526,22 @@ console.log(num.toFixed(2)) // "123.46"
 
 ```js
 function debounce(fn, wait) {
-  let timer = null
+  let timer = null;
   return (...args) => {
-    clearTimeout(timer)
+    clearTimeout(timer);
     timer = setTimeout(() => {
-      fn(args)
-      timer = null
-    }, wait)
-  }
+      fn(args);
+      timer = null;
+    }, wait);
+  };
 }
 
 document.addEventListener(
-  'input',
+  "input",
   debounce(() => {
-    console.log('search')
+    console.log("search");
   }, 300)
-)
+);
 ```
 
 **节流（Throttle）**：一个时间间隔内，无论函数被调用多少次，都只执行一次。
@@ -2513,24 +2552,24 @@ document.addEventListener(
 
 ```js
 const throttle = (fn, wait) => {
-  let timer
+  let timer;
   return (...args) => {
     if (timer) {
-      return
+      return;
     }
     timer = setTimeout(() => {
-      fn(...args)
-      timer = null
-    }, wait)
-  }
-}
+      fn(...args);
+      timer = null;
+    }, wait);
+  };
+};
 
 document.addEventListener(
-  'input',
+  "input",
   throttle(() => {
-    console.log('change')
+    console.log("change");
   }, 300)
-)
+);
 ```
 
 ## 问题 51：如何实现深浅拷贝
@@ -2545,41 +2584,41 @@ document.addEventListener(
 ```js
 function deepCopy(obj) {
   // 检查传入的参数是否为对象
-  if (typeof obj !== 'object' || obj === null) {
-    return obj
+  if (typeof obj !== "object" || obj === null) {
+    return obj;
   }
 
-  let copy
+  let copy;
   // 如果是数组，创建一个新数组
   if (Array.isArray(obj)) {
-    copy = []
+    copy = [];
     for (let i = 0; i < obj.length; i++) {
       // 递归调用深拷贝函数处理数组元素
-      copy[i] = deepCopy(obj[i])
+      copy[i] = deepCopy(obj[i]);
     }
   } else {
     // 如果是普通对象，创建一个新对象
-    copy = {}
+    copy = {};
     for (let key in obj) {
       if (obj.hasOwnProperty(key)) {
         // 递归调用深拷贝函数处理对象属性
-        copy[key] = deepCopy(obj[key])
+        copy[key] = deepCopy(obj[key]);
       }
     }
   }
 
-  return copy
+  return copy;
 }
 
 // 测试深拷贝
 const originalObj2 = {
   a: 1,
-  b: { c: 2 }
-}
-const deepCopiedObj = deepCopy(originalObj2)
+  b: { c: 2 },
+};
+const deepCopiedObj = deepCopy(originalObj2);
 
-console.log(deepCopiedObj) // 输出深拷贝后的对象
-console.log(deepCopiedObj.b === originalObj2.b) // 输出 false，说明引用不同
+console.log(deepCopiedObj); // 输出深拷贝后的对象
+console.log(deepCopiedObj.b === originalObj2.b); // 输出 false，说明引用不同
 ```
 
 ### 浅拷贝
@@ -2587,7 +2626,7 @@ console.log(deepCopiedObj.b === originalObj2.b) // 输出 false，说明引用�
 - `Object.assign()` 拷贝对象
 
 ```js
-Object.assign({}, obj)
+Object.assign({}, obj);
 ```
 
 - 扩展运算符
@@ -2601,32 +2640,32 @@ Object.assign({}, obj)
 ```js
 function shallowCopy(params) {
   // 基本类型直接返回
-  if (!params || typeof params !== 'object') return params
+  if (!params || typeof params !== "object") return params;
 
   // 根据 params 的类型判断是新建一个数组还是对象
-  let newObject = Array.isArray(params) ? [] : {}
+  let newObject = Array.isArray(params) ? [] : {};
   // 遍历 params 并判断是 params 的属性才拷贝
   for (let key in params) {
     // arr 的 key 是 index
     if (params.hasOwnProperty(key)) {
-      newObject[key] = params[key]
+      newObject[key] = params[key];
     }
   }
 
-  return newObject
+  return newObject;
 }
 
 // 测试浅拷贝
 const originalObj = {
   a: 1,
-  b: { c: 2 }
-}
-const shallowCopiedObj = shallowCopy(originalObj)
+  b: { c: 2 },
+};
+const shallowCopiedObj = shallowCopy(originalObj);
 
-originalObj.a = 10
-originalObj.b.c = 10
-console.log(originalObj) // { a: 10, b: { c: 10 } }
-console.log(shallowCopiedObj) // { a: 1, b: { c: 10 } }
+originalObj.a = 10;
+originalObj.b.c = 10;
+console.log(originalObj); // { a: 10, b: { c: 10 } }
+console.log(shallowCopiedObj); // { a: 1, b: { c: 10 } }
 ```
 
 ## 问题 52：对类数组对象的理解，如何转化为数组？
@@ -2642,15 +2681,83 @@ console.log(shallowCopiedObj) // { a: 1, b: { c: 10 } }
 - 通过 `call` 调用数组的 `xxx` 方法来实现转换
 
 ```js
-Array.prototype.slice.call(arguments)
+Array.prototype.slice.call(arguments);
 ```
 
 - 通过 `Array.from` 方法来实现转换
 
 ```js
-Array.from(arguments)
+Array.from(arguments);
 ```
 
 ## 问题 53：什么是尾调用，使用尾调用有什么好处？
 
 尾调用就是在函数的**最后一步调用函数**。在一个函数里调用另外一个函数会保留当前执行的上下文，如果在函数尾部调用，因为已经是函数最后一步，所以这时可以不用保留当前的执行上下文，从而节省内存。但是 ES6 的尾调用只能在严格模式下开启，正常模式是无效的。
+
+## 问题 54： ES6 后的新特性
+
+1. 块级作用域：let、const \*\*
+2. 模板字符串：`${}` \*\*
+3. 解构赋值：数组、对象 \*\*
+4. 扩展运算符：`...` \*\*
+5. 箭头函数： `=>` \*\*
+6. Promise \*\*
+7. async/await \*\*
+8. Proxy 和 Reflect \*\*
+9. Symbol \*\*
+10. 类 class \*\*
+11. 模块化 \*\*
+12. 默认参数：`function(a = 1) {}`
+13. Set、Map、WeakSet、WeakMap
+14. Generator
+
+## 问题 55： 垃圾回收机制
+
+在现代浏览器中，JavaScript 的内存管理依赖于垃圾回收机制（Garbage Collection, GC）。该机制是自动检测并释放不再使用的内存，避免内存泄漏和性能问题。
+
+### 核心目标：
+
+垃圾回收的核心目标是识别并释放不可达对象（即无法通过程序访问的对象）。
+
+### 具体过程
+
+垃圾回收的执行分为内存分配、标记、清除、整理四个核心阶段.
+其核心流程包括标记不可达对象、清除内存碎片，并通过新生代和老生代内存分区管理提升效率。
+
+## 问题 56：http 组成
+
+1. HTTP 报文的组成部分
+
+   请求报文：
+   请求行 ( http 方法 + http 协议 + 页面地址 + 版本)
+   请求头( key + value 值)，常见的请求头部字段包括 Host（指定服务器域名）、Connection（TCP 连接方式，如 keep-alive）、Cookie（存储于客户端的扩展字段）等 ‌
+   空行(服务端通过空行来判断下一部分不再是请求头，而当做请求体来解析)
+   请求体(数据部分)
+
+   响应报文：
+   状态行 + 响应头 + 空行 + 响应体
+
+1. 常见状态码
+
+   **状态码分类**
+
+- 1xx：服务器收到请求
+- 2xx：请求成功，如 200
+- 3xx：重定向，如 302
+- 4xx：客户端错误，如 404
+- 5xx：服务端错误，如 500
+
+  **常见状态码**
+
+- 200：成功
+- 301：永久重定向（配合 location，浏览器自动处理）
+- 302：临时重定向（配合 location，浏览器自动处理）
+- 304：资源未被修改
+- 400: 请求语法错误
+- 401: 未授权
+- 403：没权限
+- 404：资源未找到
+- 500：服务器错误
+- 504：网关超时
+
+、http 缓存

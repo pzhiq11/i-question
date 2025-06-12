@@ -52,7 +52,7 @@ webpack 构建流程是一个 `串行` 的过程。
 ## loader 和 plugin 的区别
 
 ### 1. 功能区别
-
+Loader处理文件转换（如`.scss→.css`），Plugin扩展功能（打包优化、资源管理）。
 - loader：本质是一个函数，对接收到的内容进行转换，返回转换后的结果。webpack 只认识 js，使用 loader 来转换其他类型的文件。
 - plugin：插件，用于扩展 webpack 功能。在 Webpack 运行的生命周期中会广播出许多事件，Plugin 可以监听这些事件，在合适的时机通过 Webpack 提供的 API 改变输出结果。
 
