@@ -27,6 +27,8 @@ features:
       link: /性能优化/
     # - title: 项目
     #   link: /项目/
+    - title: AI
+      link: /ai/
     - title: 算法
       link: /算法/数据结构/
     - title: Git

@@ -10,8 +10,9 @@ React Hooks 是 React 一种新的特性，它允许在函数组件中使用状�
 - **逻辑拆分与重用**：通过自定义 Hooks，你可以将复杂的逻辑拆分成小的可重用单元，从而使代码更简洁、可读。
 
 ### 调度机制
-优先级调度：Hooks更新请求会被Scheduler模块根据优先级（Immediate/UserBlocking/Normal）排队处理
-批量更新：React自动合并多个setState调用，减少渲染次数
+
+优先级调度：Hooks 更新请求会被 Scheduler 模块根据优先级（Immediate/UserBlocking/Normal）排队处理
+批量更新：React 自动合并多个 setState 调用，减少渲染次数
 
 #### React 特性：
 
@@ -31,6 +32,16 @@ React 组件的生命周期可以分为三个阶段：挂载阶段、更新阶�
 - 挂载阶段包括`constructor`、`render`、`componentDidMount`等方法，用于初始化组件、渲染到真实 DOM 和处理副作用。
 - 更新阶段包括`shouldComponentUpdate`、`render`、`componentDidUpdate`等方法，用于控制组件的重新渲染和处理更新后的副作用。
 - 卸载阶段包括`componentWillUnmount`方法，用于清理组件产生的副作用和资源
+
+![生命周期](image.png)
+
+| 类组件生命周期方法    | 对应的 Hooks 功能                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| constructor           | N/A（直接在函数组件中初始化状态即可，如使用 useState 初始化状态）                                   |
+| componentDidMount     | useEffect(() => { }, []) （传入一个空数组作为依赖项，表示在组件挂载后执行一次）                     |
+| shouldComponentUpdate | React.memo（对于函数组件，用于优化不必要的渲染）或者在 useEffect 的依赖数组中精确定义需要监听的变化 |
+| componentDidUpdate    | useEffect(() => { }, [props]) （传入依赖项数组，当这些依赖项变化时执行）                            |
+| componentWillUnmount  | useEffect(() => { return () => { } }, []) 返回的清理函数（在组件卸载前执行清理操作）                |
 
 > 新生命周期只有这个带`will`的没有被移除，其余 3 个`componentWillMount`、`componentWillReceiveProps`、`componentWillUpdate`被移除了。
 
@@ -171,9 +182,18 @@ export default App;
   - 回调函数（通过父组件向子组件 props 传递一个函数，由子组件向函数中传递参数，父组件接收）
 - 子孙组件
   - Context 上下文（useContext）
-- 兄弟组件
+- 跨级组件
+  - window
+  - context
+  - 自定义 hooks
   - 类似全局事件总线（例如：第三方库 PubSubJS），原理：消息的发布订阅机制
-  - 状态管理库（redux、zustand）
+  - 状态管理库（redux、zustand,mobx）
+
+1、通常建议遵循 React 数据流向单向数据绑定的原则，尽量避免直接访问子组件的状态。
+
+2、使用回调函数是一种更符合 React 设计理念的方式，它促进了组件之间的解耦和可复用性。
+
+3、Refs 主要用于获取 DOM 节点或在必要时获取子组件实例进行一些特殊操作，而不鼓励常规情况下频繁获取子组件的状态。
 
 ## 问题 8：React 是 mvvm 框架吗？
 
@@ -182,10 +202,14 @@ export default App;
 
 ## 问题 9：React 性能优化方案
 
-1. 使用 React.memo()来缓存组件，该组件在 props 没有变化时避免不必要的渲染。。
+1. 使用 React.memo()来缓存组件，该组件在 props 没有变化时避免不必要的渲染(类组件使用 PureComponent，类似的作用)。
 2. 使用 React.lazy()和 Suspense 来延迟加载组件。可降低初始加载时间，并提高应用程序的性能。
-3. 使用 React.useCallback()和 React.useMemo()来缓存函数和计算结果，避免不必要的函数调用和计算。
+3. 使用 React.useCallback()和 React.useMemo()来缓存函数和计算结果，避免不必要的函数调用和计算。类组件使用 shouldComponentUpdate()生命周期方法来手动控制是否更新组件。
 4. 使用 React.Fragment 来避免不必要的 DOM 节点。可减少 DOM 节点数量，提高应用程序的性能。
+5. 减少不必要的嵌套层次，合理利用 key 属性，使 React 的 diff 算法更高效。
+6. 事件处理优化，使用合成事件。
+7. 使用 ReactDOM.createPortal：将某些组件渲染到根 DOM 之外，比如渲染到 document.body，可以避免不必要的 re-render。
+8. CSS 动画与交互优化：配合 requestAnimationFrame 等 API 来处理复杂的动画，减少不必要的布局重排和重绘。
 
 ## 问题 10：refs 的作用
 
@@ -195,6 +219,8 @@ export default App;
 2. **访问 DOM 元素**：通过 refs，可以获取到 React 组件中的 DOM 元素，从而可以直接操作 DOM，例如改变样式、获取输入框的值等。这在需要直接操作 DOM 的场景下非常有用，但在 React 中应该尽量避免直接操作 DOM，而是通过状态和属性来控制组件的渲染。
 
 ## 问题 11：React 项目是如何捕获错误的？
+
+React 16 及更高版本引入了错误边界这一概念，它是一种特殊的 React 组件，能够在其子组件树中捕获任何渲染错误或其他 JavaScript 错误。当错误边界内的任何子组件抛出错误时，错误边界能够捕获这个错误，记录日志，并且可以选择性地显示恢复界面，而不是让整个应用程序崩溃。
 
 在 react16 中引入了错误边界，来捕获错误，做出降级处理。
 
@@ -269,27 +295,181 @@ class ErrorBoundary extends React.Component {
 
 ## 问题 14： React 事件机制
 
-React 的事件机制与原生 DOM 事件机制不同，它基于 合成事件（SyntheticEvent）构建，提供了跨浏览器的统一事件处理方式。React 通过对事件的委托（event delegation）优化了性能，使得事件处理更加高效。
+React 的事件机制与原生 DOM 事件机制不同，它基于 合成事件（SyntheticEvent）构建，提供了跨浏览器的事件统一处理方式和更好的性能。
 
 **合成事件：**
 
-合成事件是对浏览器原生事件的封装，它们提供了相同的接口和功能，但在内部处理上做了优化。合成事件保证了事件处理的跨浏览器一致性，并且提供了额外的性能优化。
+合成事件是对浏览器原生事件的封装，它们提供了相同的接口和功能，但在内部处理上做了优化。保证了事件处理的跨浏览器一致性，并且使用了事件委托、对象池等提供了额外的性能优化。
 
 **合成事件的优势：**
-1. 跨浏览器一致性兼容性：React 使用了合成事件，因此事件处理 across browsers consistently。
+
+1. 跨浏览器一致性：React 使用了合成事件，因此事件处理 across browsers consistently。
 2. 性能优化：React 使用了事件委托（event delegation），从而避免了在每个 DOM 元素上添加事件监听器。事件池：React 为每个事件创建一个池，重用事件对象，避免了频繁的内存分配。
 3. 统一的接口：合成事件实现了与原生 DOM 事件类似的接口，支持 stopPropagation、preventDefault 等常用方法。
 
-
 ## 问题 15：为什么父组件更新会导致所有子组件渲染？如何避免？
-react默认采用"render and diff"策略，使用React.memo/shouldComponentUpdate阻断无效更新
 
-## 问题 16：函数组件每次渲染都会创建新函数，如何避免传递新props？
-使用useCallback缓存函数引用
-````js
-const handleSubmit = useCallback(() => { /*...*/ }, [deps]);
-````
+react 默认采用"render and diff"策略，使用 React.memo/shouldComponentUpdate 阻断无效更新
 
-## 问题 17：useEffect和useLayoutEffect的区别？
-useEffect异步执行（不阻塞渲染）
-useLayoutEffect同步执行（在DOM更新后，浏览器绘制前）
+## 问题 16：函数组件每次渲染都会创建新函数，如何避免传递新 props？
+
+使用 useCallback 缓存函数引用
+
+```js
+const handleSubmit = useCallback(() => {
+  /*...*/
+}, [deps]);
+```
+
+## 问题 17：useEffect 和 useLayoutEffect 的区别？
+
+useEffect 异步执行（不阻塞渲染）
+useLayoutEffect 同步执行（在 DOM 更新后，浏览器绘制前）
+
+## 问题 18： Redux 原理
+
+从 Flux 中衍生来的（单一数据源，单向数据流）
+
+官方解释：Redux 是 JavaScript 状态容器,提供可预测化的状态管理。我的理解是，redux 是为了解决 react 组件间通信和组件间状态共享而提出的一种解决方案，主要包括 3 个部分，（store + action + reducer）。
+
+发布订阅模式/Proxy+Reflect 代理模式
+
+**Redux 的核心概念是什么？**
+
+- Store：保存应用所有状态的对象。
+- Action：描述发生事件的普通对象，用来告诉 Store 有事情发生了。
+- Reducer：指定应用状态如何变化的纯函数。接收先前的状态和一个 action，返回新的状态。
+
+**解释一下 Redux 中的中间件（Middleware）？**
+
+回答： 中间件提供第三方的扩展点，通常用来处理异步操作、日志记录、创建崩溃报告等。例如，redux-thunk 和 redux-saga 是常用的中间件，用于处理异步逻辑。
+
+**三个基本原则**
+
+> 单一真实数据源：整个应用的状态被存储在一个对象树中，并且这个对象树只存在于一个单一的 store 中。
+
+> 状态是只读的：改变状态的唯一途径是触发 action，action 是一个描述发生事件的普通对象。
+
+> 使用纯函数来执行修改：为了指定应用如何对 actions 响应，你需要编写 reducers。
+
+store：用来存储当前 react 状态机（state）的对象。connect 后，store 的改变就会驱动 react 的生命周期循环，从而驱动页面状态的改变
+State: store 对象包含的所有数据
+action: 用于接受 state 的改变命令，是改变 state 的唯一途径和入口。一般使用时在当前组件里面调用相关的 action 方法，通常把和后端的通信(ajax)函数放在这里
+reducer: action 的处理器，用于修改 store 中 state 的值，返回一个新的 state 值
+Dispatch: view 发出 action 的唯一方法
+
+### 使用
+
+**步骤 1: 创建 Store**
+
+首先，你需要创建一个 Redux store。这个 store 将持有整个应用的状态树。
+
+```js
+import { createStore } from "redux";
+import rootReducer from "./reducers";
+
+const store = createStore(rootReducer);
+```
+
+**步骤 2: 定义 Actions**
+
+然后，定义 actions，这些 actions 描述了发生的事件（如用户点击按钮）。每个 action 都有一个类型属性。
+
+```js
+const ADD_TODO = "ADD_TODO";
+const addTodoAction = (text) => ({
+  type: ADD_TODO,
+  text,
+});
+```
+
+**步骤 3: 编写 Reducers**
+
+接着，编写 reducers 来处理这些 actions，并返回新的状态。Reducer 是一个纯函数，它接收先前的状态和一个 action 作为参数，返回新的状态。
+
+```js
+function todosReducer(state = [], action) {
+  switch (action.type) {
+    case ADD_TODO:
+      return [...state, { text: action.text, completed: false }];
+    default:
+      return state;
+  }
+}
+```
+
+**步骤 4: 在 React 组件中使用 Redux**
+
+最后，在你的 React 组件中使用 useSelector 和 useDispatch 来访问和修改状态。
+
+```js
+import React from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { addTodoAction } from "./actions"; // 导入上面定义的 action creator
+
+function TodoList() {
+  const todos = useSelector((state) => state.todos); // 从 store 中读取 todos 状态
+  const dispatch = useDispatch(); // 获取 dispatch 函数来派发 actions
+
+  const handleAddTodo = () => {
+    dispatch(addTodoAction("New Todo")); // 派发一个添加 todo 的 action
+  };
+
+  return (
+    <div>
+      <button onClick={handleAddTodo}>Add Todo</button>
+      <ul>
+        {todos.map((todo, index) => (
+          <li key={index}>{todo.text}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+## 问题 19 ： React Router.
+
+React Router 是一个用于处理路由的库，它允许你创建单页应用程序（SPA）并实现路由功能。管理不同视图的切换，无需重新加载页面。
+
+**路由器类型：**
+
+1. Hash Router：使用 URL 的 hash 部分来表示路由, 有#号(example/#/path)。
+2. Browser Router：使用 URL 的路径部分来表示路由 (example.com/path)。
+3. memory Router：路由保存在内存中，不能前进后退（因为地址栏没变化）。
+4. static Router：静态路由。
+
+```js
+<Route path="/users" element={<Users />} />
+<Route path="/about" element={<About />} />
+
+// 导航组件
+<Link to="/users">Users</Link>
+<Link to="/about">About</Link>
+
+<Route path="/old" element={<Navigate to="/new" />} />
+
+// 跳转方式
+1. <Link to="/">Home</Link>
+2. <button onClick={() => navigate(-1)}>Go Back</button>
+3. <NavLink to="/">Home</NavLink>
+
+
+```
+
+**router 如何路由传参**
+
+- url 传参
+- 在路径中定义参数。
+- 使用 Link 或 navigate 传递状态。
+  ```js
+    <Link to="/details" state={{ name: 'John' }}>User John</Link>
+    <button onClick={() => navigate('/details', { state: { name: 'John' } })}>User John</button>
+  ```
+
+**查询参数**
+
+1. 使用 url 获取
+2. 使用 useLocation 获取参数
+3. 使用 useParams 钩子获取参数
+4. 使用 useSearchParams 获取参数

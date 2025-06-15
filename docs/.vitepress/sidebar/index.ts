@@ -32,6 +32,10 @@ export const sidebar = {
     { text: '基础知识', link: '/react/' },
     { text: '原理篇', link: '/react/原理篇' }
   ],
+  '/ai/': [
+    { text: 'ai 理论', link: '/ai/' },
+    { text: 'agent开发', link: '/ai/agent开发' }
+  ],
   '/前端工程化/': [
     {
       items: [

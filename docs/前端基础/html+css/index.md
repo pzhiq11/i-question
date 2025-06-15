@@ -1,5 +1,36 @@
 # HTML
 
+HTML5 新特性：
+
+1. 语义化标签 ‌：引入`<header>`、`<nav>`、`<article>`等标签，使网页结构更清晰，利于 SEO 和无障碍访问。‌‌
+
+   - `<header>` 头部标签。
+   - `<nav>` 导航标签。
+   - `<article>` 内容标签。
+   - `<aside>` 侧边栏标签。
+   - `<section>` 定义文档某个区域。
+   - `<footer>` 尾部标签。
+
+2. 多媒体支持：
+   - 通过`<audio>`和`<video>`标签直接嵌入音视频，无需插件。‌‌
+3. 图形与动画：
+
+   - `<canvas>`元素结合 JavaScript 实现动态图形绘制。‌‌
+   - `<svg>`元素可以创建矢量图形，并支持动画。‌‌
+
+4. ‌ 表单增强 ‌：新增 email、date 等输入类型及 required、pattern 等属性，简化验证。‌‌
+5. 本地存储与 API‌：
+   - Web Storage 本地存储：localStorage、sessionStorage
+   - 浏览器 API：Geolocation、web Worker、Canvas、WebSocket、IndexedDB、WebRTC、WebAssembly。
+
+CSS3 新特性：
+
+1. 盒子模型
+2. 盒子布局：flex、grid
+3. 动画过渡：transition、animation、动画（@keyframes）
+4. ‌ 响应式设计 ‌：媒体查询（@media）适配不同设备屏幕
+5. ‌ 选择器扩展 ‌：属性选择器（如[attr^=value]）提升样式精准度。‌‌
+
 ## 问题 1：什么是重绘，什么是回流？如何减少回流？
 
 - **重绘（Repaint）：**
@@ -41,14 +72,8 @@
     </style>
   </head>
   <body>
-    <div
-      id="box1"
-      class="box"
-    ></div>
-    <div
-      id="box2"
-      class="box"
-    ></div>
+    <div id="box1" class="box"></div>
+    <div id="box2" class="box"></div>
   </body>
 </html>
 ```
@@ -140,7 +165,7 @@
 
 ```css
 .clearfix::after {
-  content: '';
+  content: "";
   display: table;
   clear: both;
 }
@@ -187,17 +212,13 @@
   - `<link>` 标签是 HTML 标记，用于在 HTML 文档的`<head>`部分中引入外部 CSS 文件。它具有自己的属性，例如 `rel`（关系）、`href`（资源链接）、`type`（MIME 类型）等。
 
   ```html
-  <link
-    rel="stylesheet"
-    type="text/css"
-    href="styles.css"
-  />
+  <link rel="stylesheet" type="text/css" href="styles.css" />
   ```
 
   - `@import` 是 CSS 规则，用于在 CSS 样式表中引入外部 CSS 文件。它必须位于 CSS 样式表中，通常放在样式表的顶部，可以用于导入其他 CSS 文件。
 
   ```css
-  @import url('styles.css');
+  @import url("styles.css");
   ```
 
 - **加载方式**：
@@ -296,10 +317,7 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
       .box1 {
@@ -330,10 +348,7 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
       .box1 {
@@ -366,10 +381,7 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
       .box1 {
@@ -405,10 +417,7 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
       .box1 {
@@ -440,10 +449,7 @@ BFC：块级格式化上下文，就是一个独立的布局环境，BFC 里面�
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <style>
       .box1 {
