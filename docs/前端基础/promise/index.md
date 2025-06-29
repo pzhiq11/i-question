@@ -12,7 +12,11 @@
 
 ## Promise
 
+什么是promise：Promise是异步编程的一种解决方案，它提供了一种更优雅的方式来处理异步代码，尤其是处理回调地狱（callback hell）问题。Promise 是一个构造函数，接收一个函数作为参数，返回一个 Promise 实例。这个实例有then、catch、finally等方法，一个promise有三种状态，分别是 `pending`（进行中）、`fulfilled`（已成功）和 `rejected`（已失败）。状态从pending 变为 fulfilled 或 rejected。一经改变，就无法再改变。状态改变通过resolve和reject两个函数实现。使用 then 方法可以为两个状态的改变注册回调函数。这个回调是属于微任务，会在事件循环中优先执行。
+
 ES6 的 `Promise` 是一个满足 `Promise A+` 规范的 `Promise` 实现。是 JS 中处理异步操作的一种模式和对象，它提供了一种更优雅的方式来处理异步代码，尤其是处理回调地狱（callback hell）问题。
+
+
 
 - **Promise 有三种状态**：
   - Pending（进行中）：Promise 的初始状态，表示异步操作尚未完成，也不失败。
@@ -318,7 +322,7 @@ Promise.race([
 ## Promise 和 await/async 的关系
 
 - Promise：一种用于处理异步操作的对象，它代表了一个异步操作的最终完成或失败，并允许在异步操作完成后执行相关的代码。`Promise` 提供了一种更灵活的方式来管理异步代码，尤其是在处理多个异步操作的情况下。
-- async/await：一种构建在 Promise 之上的**语法糖**。它是 ECMAScript 2017 (ES8) 引入的特性，旨在简化异步代码的编写和理解。<u>async 函数返回一个 Promise，允许在函数内使用 await 关键字等待异步操作完成。</u>
+- async/await：一种构建在 Promise 之上的**语法糖**。它是 ECMAScript 2017 (ES8) 引入的特性，旨在简化异步代码的编写和理解，可以优化then链的书写。<u>async 函数返回一个 Promise，允许在函数内使用 await 关键字等待异步操作完成。</u>
 
 **关系：**
 

@@ -8,6 +8,8 @@
 
 ## 面试题 1：OSI 及 OSI 七层模型
 
+概念： OSI（开放系统互连）模型是一个网络互连模型，用于描述网络通信的各个方面。它将网络通信分为七个层次，每个层次负责不同的功能。
+
 作用：将世界范围内的计算机连接为网络的框架
 
 ### OSI 七层模型
@@ -49,10 +51,10 @@
 
 ## 面试题 3：TCP（传输控制协议） 和 UDP（用户数据报协议） 的区别
 
-两种常用的传输层协议，用于在网络中传输数据。
+TCP和UDP是网络通信中传输层的两种常用的传输层协议，用于在网络中传输数据。
 
 1. 连接方式
-   - TCP：面向连接的协议，在传输数据之前需要建立可靠的连接（三次握手），确保通信双方准备好。
+   - TCP：面向连接的协议，在传输数据之前**需要通过三次握手建立可靠的连接**，确保通信双方准备好。
    - UDP：无连接的协议，直接发送数据，不需建立连接。
 2. 可靠性
    - TCP：传输数据时，会进行错误校验和重传机制，确保数据传输成功。
@@ -106,10 +108,35 @@
 
 **区别：**
 
-1. get 幂等，post 不是。（多次访问效果一样为幂等）
-2. get 能触发浏览器缓存，post 没有。
-3. get 能由浏览器自动发起（如 img - src，资源加载），post 不行。
-4. post 相对安全，一定程度上规避 CSRF 风险。
+- 语义：
+
+  GET：用于从服务器获取资源，不应该对服务器端的数据进行修改。GET 请求是幂等的，即多次执行相同的 GET 请求应该返回相同的结果，不会产生副作用。
+
+  POST：用于向服务器提交数据，通常用于创建新的资源或者对服务器端的数据进行修改。POST 请求不是幂等的，即多次执行相同的 POST 请求可能会产生不同的结果，可能会对服务器端的数据产生副作用。
+
+- 参数传递：
+
+  GET：参数通过 URL 的查询字符串（query string）传递，参数会附加在 URL 的末尾，如 http://example.com/resource?key1=value1&key2=value2。由于参数附加在 URL 中，有长度限制，并且会被保存在浏览器的历史记录和服务器的访问日志中。
+
+  POST：参数通过请求体（request body）传递，参数不会附加在 URL 中，而是作为请求体的一部分发送。POST 请求没有长度限制，可以传递大量的数据，且参数不会暴露在 URL 中，更加安全。
+
+- 安全性：
+
+  GET：由于参数暴露在 URL 中，可能会被恶意用户通过网络抓包工具等获取，因此不适合传递敏感信息，如密码等。GET 请求更适合用于获取公开信息。
+
+  POST：参数在请求体中发送，相对于 GET 请求更安全，适合传递敏感信息，如登录表单的用户名和密码等。
+
+- 缓存：
+
+  GET：请求结果可以被缓存，可以被浏览器缓存、代理服务器缓存等，如果请求相同的 URL，可以直接使用缓存结果，提高性能。
+
+  POST：请求结果通常不会被缓存，每次请求都会向服务器发送数据，不会使用缓存结果。
+
+- 幂等性：
+
+  GET：由于 GET 请求是幂等的，多次执行相同的 GET 请求应该返回相同的结果，不会对服务器端的数据产生影响，因此适合用于查询操作。
+
+  POST：POST 请求不是幂等的，多次执行相同的 POST 请求可能会产生不同的结果，可能会对服务器端的数据产生影响，因此适合用于对数据进行修改或者创建新的资源。
 
 **相同：**
 
@@ -276,9 +303,46 @@ Cookie（HTTP Cookie）和 Session（会话）都是用于在 Web 应用程序�
 
 **解决方法：**
 
-- CORS：服务器开启跨域资源共享
 - JSONP：利用`<script>`标签不存在跨域限制，只支持 GET 请求，且不安全。
+
+```js
+function jsonp(url, callback) {
+  const script = document.createElement("script");
+  window[callback] = function (data) {
+    console.log(data);
+    document.body.removeChild(script);
+  };
+  script.src = `${url}&callback=${callback}`;
+  document.body.appendChild(script);
+}
+jsonp("http://example.com/api", "callback");
+
+```
+
+- 开发环境使用 Vite 或者 webpack 搭建的项目，配置代理跨域。
+
+  ```js
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        pathRewrite: { '^/api': '' },
+      },
+    },
+  }
+
+  ```
+
+- CORS：服务器开启跨域资源共享
+
+  ```js
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "http://example.com");
+  ```
+
 - nginx 代理跨域
+
 - nodejs 中间件代理跨域，通过 node 开启一个代理服务器。
 
 ## 面试题 15：同源策略具体限制的具体内容

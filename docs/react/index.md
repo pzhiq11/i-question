@@ -326,11 +326,16 @@ const handleSubmit = useCallback(() => {
 useEffect 异步执行（不阻塞渲染）
 useLayoutEffect 同步执行（在 DOM 更新后，浏览器绘制前）
 
+useLayoutEffect总是比useEffect先执行。
+
 ## 问题 18： Redux 原理
 
 从 Flux 中衍生来的（单一数据源，单向数据流）
 
-官方解释：Redux 是 JavaScript 状态容器,提供可预测化的状态管理。我的理解是，redux 是为了解决 react 组件间通信和组件间状态共享而提出的一种解决方案，主要包括 3 个部分，（store + action + reducer）。
+答：Redux 是一个JavaScript状态管理库,提供可预测化的状态管理。我的理解是，redux 是为了解决 react 组件间通信和组件间状态共享而提出的一种解决方案，主要包括 3 个部分，（store + action + reducer）。
+
+底层原理： 基于单一全局状态树（store）和纯函数（reducer）的设计模式，确保状态更新的可预测性和一致性。基于发布订阅模式，通过订阅的方式监听数据的变化。当数据变化时，所有订阅者都会收到通知并更新自己。
+
 
 发布订阅模式/Proxy+Reflect 代理模式
 

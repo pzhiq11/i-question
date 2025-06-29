@@ -492,6 +492,8 @@ console.log(s);
 
 ## 问题 17：null 和 undefined 的区别
 
+undefined 代表的含义是未定义，null 代表的含义是空对象。一般变量声明了但还没有定义的时候会返回 undefined，null 主要用于赋值给一些可能会返回对象的变量，作为初始化。
+
 **`null`**
 
 - `null` 是一个特殊的关键字，表示一个空对象指针。
@@ -617,7 +619,7 @@ doSomethingRepeatedly();
 
 **注意**：闭包会使得函数内部的变量在函数执行后仍然存在于内存中，直到没有任何引用指向闭包。如果不注意管理闭包，可能会导致内存泄漏问题。
 
-**案例**：
+**案例**： 节流防抖、函数柯里化、链式调用、封装一些方法返回变量和其它方法等。
 
 ```js
 // 案例1
@@ -961,11 +963,16 @@ console.log(counter2()); // 1，每个 counter 具有自己的作用域链，且
 
 **事件冒泡（Bubbling）**
 
+事件冒泡是 DOM 事件的默认行为，它允许在最内层元素上触发的事件在向上传播到外层嵌套的祖先或更高层的节点。当事件发生时，它会首先被最深层次的子节点处理，然后逐级向外传递直到根节点（通常是 document 对象）。在事件冒泡阶段，您可以阻止事件的进一步传播(`event.stopPropagation()`以阻止事件继续向上冒泡。
+)
+
 - 事件从触发事件的目标元素开始，逐级向上冒泡到 DOM 树的根节点。
 - 首先执行目标元素上的事件处理程序，然后是父元素，再是更高层次的祖先元素。
 - 事件冒泡是默认的事件传播方式。
 
 **事件捕获（Capturing）**
+
+事件捕获是另一种事件传播方式，它允许在最外层祖先元素上触发的事件在向下传递到最内层的子节点。当事件发生时，它会首先被根节点处理，然后逐级向下传递直到目标元素。在事件捕获阶段，您可以阻止事件的进一步传播(`event.stopImmediatePropagation()`以阻止事件捕获和冒泡阶段中其他事件的进一步传播。)
 
 - 事件从 DOM 树的根节点开始，逐级向下捕获到触发事件的目标元素。
 - 首先执行根节点上的事件处理程序，然后是子元素，再是更低层次的子孙元素。
@@ -1104,6 +1111,13 @@ console.log(chain(3).increase.decrease.double.end);
 ```
 
 ## 问题 30：for-in 和 for-of
+
+for…of 是 ES6 新增的遍历方式，允许遍历一个含有 iterator 接口的数据结构（数组、对象等）并且返回各项的值，和 ES3 中的 for…in 的区别如下
+
+- for…in 获取的是对象的键名，for…of 遍历获取的是对象的键值；
+- for… in 会遍历对象的整个原型链，性能非常差不推荐使用，而 for … of 只遍历当前对象不会遍历原型链；
+
+总结：for...in 循环主要是为了遍历对象而生，不适用于遍历数组；for...of 循环可以用来遍历数组、类数组对象，字符串、Set、Map 以及 Generator 对象。
 
 **for-in**：遍历对象的可枚举属性（包括原型链上的属性）。
 
@@ -2759,3 +2773,172 @@ Array.from(arguments);
 - 404：资源未找到
 - 500：服务器错误
 - 504：网关超时
+
+## 57. 对 AJAX 的理解，实现一个 AJAX 请求
+
+AJAX 是 Asynchronous JavaScript and XML 的缩写，指的是通过 JavaScript 的 异步通信，从服务器获取 XML 文档从中提取数据，再更新当前网页的对应部分，而不用刷新整个网页。
+
+## 58. 作用域和作用域链
+
+### 作用域
+
+作用域是指变量和函数的可访问范围，它决定了代码区块中变量和其他资源的可见性和生命周期。在 JavaScript 中，主要有两种作用域：全局作用域和函数作用域（ES6 引入了块级作用域）。
+
+- **全局作用域**：在代码的最外层定义的变量或声明的函数拥有全局作用域，它们可以在任何地方被访问到。
+
+  ```js
+  var globalVar = "I am global";
+  function globalFunction() {
+    console.log("This is a global function");
+  }
+  globalFunction(); // This is a global function
+  console.log(globalVar); // I am global
+  ```
+
+- **函数作用域**：在函数内部定义的变量或声明的函数只在当前函数内有效，外部无法直接访问。
+
+  ```js
+  function outerFunction() {
+    var localVar = "I am local";
+    function innerFunction() {
+      console.log(localVar); // Accessible within the same function scope
+    }
+    innerFunction();
+  }
+  outerFunction(); // I am local
+  // console.log(localVar); // Un
+  ```
+
+### 作用域链
+
+当代码试图访问一个变量时，js 引擎会从当前的作用域开始查找该变量的值，如果找不到，则沿着作用域链向上级作用域继续查找，直到全局作用域或找到为止。这一层层的关系就是作用域链。
+
+- **嵌套函数**：在内部函数中可以访问外部函数的局部变量。
+
+  ```js
+  function outerFunction() {
+    var outerVar = "I am from outer";
+    function innerFunction() {
+      console.log(outerVar); // Accessible due to scope chain
+    }
+    innerFunction();
+  }
+  outerFunction(); // I am from outer
+  ```
+
+- **全局对象和隐式全局变量**：如果在全局作用域下声明变量而没有使用 `var` 或 `let` 等关键字，那么这个变量会被自动添加到全局对象的属性上，成为全局变量。
+
+  ```js
+  implicitGlobal = "I am an implicit global variable";
+  console.log(window.implicitGlobal); // In a browser environment, this will output 'I am an implicit global variable'
+  ```
+
+## 59.isNaN 和 Number.isNaN 函数的区别？
+
+- 函数 isNaN 接收参数后，会尝试将这个参数转换为数值，任何不能被转换为数值的的值都会返回 true，因此非数字值传入也会返回 true ，会影响 NaN 的判断。
+- 函数 Number.isNaN 会首先判断传入参数是否为数字，如果是数字再继续判断是否为 NaN ，不会进行数据类型的转换，这种方法对于 NaN 的判断更为准确。
+
+## 60. 对执行上下文的理解
+
+执行上下文可以简单理解为一个对象，它包含了函数执行时的一些信息，比如：
+
+- 变量对象（VO）：存储了该执行上下文中定义的变量和函数声明。
+- 作用域链（Scope Chain）：决定了当前执行代码对变量的访问权限。
+- this 的指向：在全局执行上下文中，this 通常指向全局对象；而在其他执行上下文中，this 的值取决于函数的调用方式。
+
+执行上下文类型
+
+1. 全局执行上下文
+
+任何不在函数内部的都是全局执行上下文，它首先会创建一个全局的 window 对象，并且设置 this 的值等于这个全局对象，一个程序中只有一个全局执行上下文。
+
+2. 函数执行上下文
+
+当一个函数被调用时，就会为该函数创建一个新的执行上下文，函数的上下文可以有任意多个。 3. eval 函数执行上下文
+
+执行在 eval 函数中的代码会有属于他自己的执行上下文，不过 eval 函数不常使用，不做介绍。
+
+## 61：前端水印
+
+概念： 水印就是在页面上添加的文字或图片，用于标识版权或者防止内容被非法使用。
+
+常见的实现方式有以下几种：
+
+### 1. 使用 canvas 实现
+
+```js
+function addWaterMark(str) {
+  let can = document.createElement("canvas");
+  can.width = 200;
+  can.height = 150;
+  let cans = can.getContext("2d");
+  cans.rotate((-20 * Math.PI) / 120);
+  cans.font = "20px Vedana";
+  cans.fillStyle = rgba(180, 180, 180, 0.3);
+  cans.textAlign = "left";
+  cans.textBaseline = "middle";
+  cans.fillText(str, can.width / 10, can.height / 2);
+  return can;
+}
+document.body.appendChild(addWaterMark("版权所有"));
+```
+
+### 2. 使用 CSS 实现
+
+```css
+#watermark {
+  pointer-events: none;
+  user-select: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-repeat: repeat;
+
+  /* 背景图片 */
+  background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAFUlEQVQYGW3BsRfEMAwC+/3P1Xb2Q4EwAbdK8GGp9sQkKDJqZrL5JW9FPwYpUAAAABJRU5ErkJggg==");
+}
+```
+
+### 3. 使用 SVG 实现
+
+```html
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern
+      id="watermark"
+      width="200"
+      height="200"
+      patternUnits="userSpaceOnUse"
+    >
+      <text x="10" y="20" font-size="20" fill="#f00">水印文字</text>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#watermark)" />
+</svg>
+```
+
+## 62： Cookie、sessionStorage、localStorage 的区别
+
+### Cookie
+
+- 由服务器生成，发送给浏览器，浏览器把 cookie 以 key-value 形式保存到某个目录下的文本文件中。
+- 向同一个服务器再发起请求时会自动携带上该域名下的 cookie（前提是 http 中 set-cookie 没有设置 HttpOnly 属性）。
+- 可设置过期时间，如果不设置则默认为浏览器关闭即失效，最大只能有 4kb 左右的数据，自动发送，隐私策略问题，不支持跨域。
+
+### sessionStorage 和 localStorage
+
+- 都保存在客户端，不参与和服务器通信。
+- 存储大小一般为 5MB。
+- 只在同源下可用。
+
+**区别：**
+
+1. 生命周期：sessionStorage 的数据在当前浏览器窗口关闭后自动删除；localStorage 始终有效，直到手动删除。
+2. 作用域：sessionStorage 不是共享的，在不同的浏览器窗口有不同的存储内容。localStorage 在所有同源窗口中都是共享的。 
+3. 接口丰富性：Web Storage 支持更多数据操作的方法，比如 `setItem`、`getItem` 和 `removeItem` 等。
+
+## 63： 谈谈你对前端模块化的理解？
+
+模块化是指解决一个复杂问题时

@@ -25,8 +25,33 @@ HTML5 新特性：
 
 CSS3 新特性：
 
-1. 盒子模型
-2. 盒子布局：flex、grid
+1. 盒子模型： ‌CSS 盒子模型是网页设计中用于描述 HTML 元素布局的核心概念，它将每个元素视为由内容(content)、内边距(padding)、边框(border)和外边距(margin)四层组成的矩形盒子 ‌。默认情况下，元素总宽度=内容宽度+内边距+边框+外边距，可通过 box-sizing: border-box 调整为包含边框和内边距的总宽度。‌‌
+2. 盒子布局：flex、grid；
+
+   1. grid 布局：grid 布局，通过设置行和列属性，实现更灵活的布局。
+   2. 常用属性：
+
+      1. `grid-template-columns`：设置列的宽度。`100px 100px 100px` ; `1fr 1fr 1fr/ 1fr 2fr ` ; `grid-template-columns: repeat(3, 1fr);`
+      2. `grid-template-rows`：设置行的高度。 一样
+      3. `grid-template`： 设置列和行的属性。 例如： `grid-template: 1fr 2fr / 1fr 1fr;`
+      4. ` grid-template-areas`: 设置区域名称。例如
+
+         ```CSS
+         .warp { grid-template-areas: "
+          "header header header"
+          "nav content content"
+          "footer footer footer";
+         "
+          }
+
+          .header { grid-area: header; }
+          .nav { grid-area: nav; }
+          .content { grid-area: content; }
+          .footer { grid-area: footer; }
+         ```
+
+      5. ` row gap  / column gap / gap`: 行列间隔
+
 3. 动画过渡：transition、animation、动画（@keyframes）
 4. ‌ 响应式设计 ‌：媒体查询（@media）适配不同设备屏幕
 5. ‌ 选择器扩展 ‌：属性选择器（如[attr^=value]）提升样式精准度。‌‌

@@ -768,3 +768,131 @@ class EventEmitter {
   }
 }
 ```
+
+## 问题 18：记忆函数 II
+
+现给定一个函数 fn ，返回该函数的一个 记忆化 版本。
+
+一个 记忆化 的函数是一个函数，它不会被相同的输入调用两次。而是会返回一个缓存的值。
+
+函数 fn 可以是任何函数，对它所接受的值类型没有任何限制。如果两个输入值在 JavaScript 中使用 === 运算符比较时相等，则它们被视为相同。
+
+```js
+/**
+ * @param {Function} fn
+ * @return {Function}
+ */
+function memoize(fn) {
+  const idMap = new Map();
+  let id = 0;
+  const argsMap = new Map();
+  return function (...args) {
+    const idList = args.slice().map((arg) => {
+      if (idMap.has(arg)) {
+        return idMap.get(arg);
+      } else {
+        idMap.set(arg, ++id);
+        return id;
+      }
+    });
+
+    const key = JSON.stringify(idList);
+    console.log(idList, key, idMap);
+    if (argsMap.has(key)) {
+      return argsMap.get(key);
+    } else {
+      const res = fn(...args);
+      argsMap.set(key, res);
+      return res;
+    }
+  };
+}
+```
+
+## 问题 19：有时间限制的 Promise 对象
+
+请你编写一个函数，它接受一个异步函数 fn 和一个以毫秒为单位的时间 t。它应根据限时函数返回一个有 限时 效果的函数。函数 fn 接受提供给 限时 函数的参数。
+
+限时 函数应遵循以下规则：
+
+如果 fn 在 t 毫秒的时间限制内完成，限时 函数应返回结果。
+如果 fn 的执行超过时间限制，限时 函数应拒绝并返回字符串 "Time Limit Exceeded" 。
+
+```js
+/**
+ * @param {Function} fn
+ * @param {number} t
+ * @return {Function}
+ */
+var timeLimit = function (fn, t) {
+  let timer = null;
+  return async function (...args) {
+    return new Promise(async (res, rej) => {
+      timer = setTimeout(() => {
+        rej("Time Limit Exceeded");
+      }, t);
+      fn(...args)
+        .then(res)
+        .catch(rej)
+        .finally(() => {
+          clearTimeout(timer);
+        });
+    });
+  };
+
+  // 2： Promise Race
+  return async function (...args) {
+    return Promise.race([
+      new Promise((resolve, reject) => {
+        setTimeout(() => reject("Time Limit Exceeded"), t);
+      }),
+      fn(...args),
+    ]);
+  };
+
+  // 3： Promise
+  return async function (...args) {
+    return new Promise(async (resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject("Time Limit Exceeded");
+      }, t);
+
+      try {
+        const result = await fn(...args);
+        resolve(result);
+      } catch (err) {
+        reject(err);
+      }
+      clearTimeout(timeout);
+    });
+  };
+};
+
+/**
+ * const limited = timeLimit((t) => new Promise(res => setTimeout(res, t)), 100);
+ * limited(150).catch(console.log) // "Time Limit Exceeded" at t=100ms
+ */
+```
+
+## 问题 20：检查是否是类的对象实例
+
+请你编写一个函数，检查给定的值是否是给定类或超类的实例。
+
+可以传递给函数的数据类型没有限制。例如，值或类可能是 undefined 。
+
+```js
+/**
+ * @param {*} obj
+ * @param {*} classFunction
+ * @return {boolean}
+ */
+var checkIfInstanceOf = function (obj, classFunction) {
+  if (obj === null || obj === undefined) return false;
+  let proto = Object.getPrototypeOf(obj);
+  while (proto) {
+    if (proto.constructor === classFunction) return true;
+    proto = Object.getPrototypeOf(proto);
+  }
+  return false;
+};
+```
