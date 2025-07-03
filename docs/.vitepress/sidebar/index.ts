@@ -5,6 +5,7 @@ export const sidebar = {
       items: [
         { text: 'HTML + CSS', link: '/前端基础/html+css/' },
         { text: 'JS', link: '/前端基础/js/' },
+        { text: 'TS', link: '/前端基础/ts/' },
         { text: 'Promise', link: '/前端基础/promise/' },
         { text: '手写题', link: '/前端基础/手写题/' }
       ]
@@ -53,6 +54,9 @@ export const sidebar = {
     },
     {
       items: [{ text: 'vite', link: '/前端工程化/vite' }]
+    },
+    {
+      items: [{ text: '项目难点亮点', link: '/前端工程化/项目难点亮点' }]
     }
   ],
   '/性能优化/': [
@@ -162,7 +166,8 @@ export const sidebar = {
       text: '算法',
       items: [
         { text: '数据结构', link: '/算法/数据结构/' },
-        { text: '算法题', link: '/算法/算法题/' }
+        { text: '算法题', link: '/算法/算法题/' },
+        { text: '常见算法', link: '/算法/算法题/常见算法' }
       ]
     }
   ],

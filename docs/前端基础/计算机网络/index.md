@@ -369,3 +369,43 @@ jsonp("http://example.com/api", "callback");
 3. **程序错误或重复调用**：在你的 JavaScript 代码中，有时会发生意外的重复调用 Fetch API 的情况，例如在某个事件处理程序中多次触发 Fetch 请求。这将导致多个请求被发送。
 4. **浏览器预加载和预解析**：现代浏览器可能会在背后执行一些资源的预加载和预解析操作，以提高性能。这可能导致浏览器发送额外的请求。这些请求通常不会在开发者控制范围之内。
 5. **浏览器插件或扩展**：有时，浏览器插件或扩展可能会触发 Fetch 请求。这可能会导致你看到不同于你的网站代码所发出的请求。
+
+
+## 面试题 18：Websocket
+
+### 1. WebSocket 的概念
+
+WebSocket 是 HTML5 开始提供的一种在单个 TCP 连接上进行全双工通讯的协议。
+
+- **全双工通信**：即双方都可以随时发送数据，不需要等待对方的响应。
+- **持久连接**：建立连接后，客户端和服务器之间的连接会保持打开状态，直到一方主动关闭它。
+- **轻量级**：相对于 HTTP 长轮询（Long Polling）等其他实时技术来说，WebSocket 使用更少的开销来维持连接和数据传输。
+
+### 2. 如何创建 WebSocket 连接？
+
+```js
+// 创建一个新的 WebSocket 对象
+const socket = new WebSocket("ws://example.com/socket");
+
+// 当连接成功时触发 open 事件
+socket.addEventListener("open", (event) => {
+  console.log("Connection established.");
+});
+
+// 当收到消息时触发 message 事件
+socket.addEventListener("message", (event) => {
+  console.log(`Received: ${event.data}`);
+});
+
+// 当发生错误时触发 error 事件
+socket.addEventListener("error", (event) => {
+  console.error("An error occurred.");
+  socket.close();
+  // 可以选择重新连接
+  // reconnect();
+  // 或者其他错误处理
+
+})
+
+```
+
