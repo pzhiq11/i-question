@@ -2,12 +2,17 @@
 
 ## 问题 1：什么是 React Hooks？
 
-React Hooks 是 React 一种新的特性，它允许在函数组件中使用状态（state）、副作用和其它 react 特性，而无需编写类组件 ‌‌。
+React Hooks 是 React 16.8 一种新的特性，它允许在函数组件中使用状态（state）、副作用和其它 react 特性，而无需编写类组件 ‌‌。
 
 ### 使用 React Hooks 好处是啥？
 
 - **简化状态管理和副作用**：Hooks 允许你直接在函数组件中处理状态和副作用，无需类和复杂的生命周期方法。
 - **逻辑拆分与重用**：通过自定义 Hooks，你可以将复杂的逻辑拆分成小的可重用单元，从而使代码更简洁、可读。
+
+### 常见 Hooks 封装场景
+
+- 数据获取与缓存：封装数据请求和本地缓存的逻辑，如 useFetch、useCache 等。// 提供加载loading状态、错误处理等。
+- useStore、useEventEmitter、useStorage、useDebounce、useThrottle、useEventListener 等。
 
 ### 调度机制
 
@@ -60,7 +65,6 @@ React 组件的生命周期可以分为三个阶段：挂载阶段、更新阶�
 - 主题切换：通过高阶组件包裹原有组件，根据用户选择动态改变样式。
 - 状态提升：通过高阶组件包裹原有组件，将多个子组件的状态提升至父组件中管理。
 - 数据获取：通过高阶组件包裹原有组件，在渲染前自动发起请求并更新状态。
-
 
 ## 问题 5：受控组件 和 非受控组件
 
@@ -334,15 +338,25 @@ const handleSubmit = useCallback(() => {
 useEffect 异步执行（不阻塞渲染）
 useLayoutEffect 同步执行（在 DOM 更新后，浏览器绘制前）
 
-useLayoutEffect总是比useEffect先执行。
+useLayoutEffect 总是比 useEffect 先执行。
 
 ## 问题 18： Redux 原理
 
 从 Flux 中衍生来的（单一数据源，单向数据流）
 
-答：Redux 是一个JavaScript状态管理库,提供可预测化的状态管理。我的理解是，redux 是为了解决 react 组件间通信和组件间状态共享而提出的一种解决方案，主要包括 3 个部分，（store + action + reducer）。
+答：Redux 是一个 JavaScript 状态管理库,提供可预测化的状态管理。我的理解是，redux 是为了解决 react 组件间通信和组件间状态共享而提出的一种解决方案，主要包括 3 个部分，（store + action + reducer）。
 
 底层原理： 基于单一全局状态树（store）和纯函数（reducer）的设计模式，确保状态更新的可预测性和一致性。基于发布订阅模式，通过订阅的方式监听数据的变化。当数据变化时，所有订阅者都会收到通知并更新自己。
+
+工作流程：
+
+1. 首先，用户（通过View）发出Action，发出方式就用到了dispatch方法.
+2. 然后 Redux store 就会自动调用传入的 rootReducer 函数。并且传入两个参数：当前状态（state）和要处理的 action。
+3. rootReducer 会再根据传入的两个参数，计算出新的状态，然后返回这个新状态。
+4. state一旦有变化，就会自动更新页面。
+
+
+异步请求处理方式： 可以在 componentDidmount 中直接进行请求无须借助redux。但是在一定规模的项目中,上述方法很难进行异步流的管理,通常情况下我们会借助redux的异步中间件进行异步处理。
 
 
 发布订阅模式/Proxy+Reflect 代理模式
@@ -443,12 +457,16 @@ function TodoList() {
 
 ## 问题 19 ： React Router.
 
+> 原理、几种模式、switch用处、如何切换（Route、Route/Switch组合、 Link、 NavLink、Redirect）
+
 React Router 是一个用于处理路由的库，它允许你创建单页应用程序（SPA）并实现路由功能。管理不同视图的切换，无需重新加载页面。
 
 **路由器类型：**
 
-1. Hash Router：使用 URL 的 hash 部分来表示路由, 有#号(example/#/path)。
-2. Browser Router：使用 URL 的路径部分来表示路由 (example.com/path)。
+1. Hash Router：使用 URL 的 hash 部分来表示路由, 有#号(example/#/path)。基于hash **实现原理**：使用 hashchange 事件监听 URL 的变化。例如：`window.addEventListener('hashchange', callback)` 方法来监听 hash 的改变; 使用 `location.hash =XXX` 来改变 hash。
+
+2. Browser Router：使用 URL 的路径部分来表示路由 (example.com/path)。基于history **实现原理**：使用 HTML5 history API。例如：`histor.pushState` 和 `history.replaceState` 方法来改变 URL; 监听 URL 变化可以使用 `window.addEventListener('popstate', callback)` 方法。
+
 3. memory Router：路由保存在内存中，不能前进后退（因为地址栏没变化）。
 4. static Router：静态路由。
 
@@ -486,3 +504,78 @@ React Router 是一个用于处理路由的库，它允许你创建单页应用�
 2. 使用 useLocation 获取参数
 3. 使用 useParams 钩子获取参数
 4. 使用 useSearchParams 获取参数
+
+Link 和 a 的区别：
+
+从最终渲染的 DOM 来看，这两者都是链接，都是a标签, `<Link>` 的“跳转”行为只会触发相匹配的`<Route>`对应的页面内容更新，而不会刷新整个页面。
+
+React-Router 4的Switch有什么用？
+
+Switch 主要用于包裹多个 Route 组件，并为它们提供一个共同的父路径。当请求的 URL 与某个 Route 的 path 相匹配时，Switch 会渲染第一个与之相匹配的子 Route。如果没有任何 Route 被匹配到，则不会显示任何内容。
+
+
+## 问题 20： 对有状态组件和无状态组件的理解
+
+有状态组件和无状态组件是 React 开发中常见的两种类型的组件。它们之间的主要区别在于是否拥有自己的 state（状态）。
+
+### 无状态组件 (Stateless Component)
+无状态组件通常被称为函数式组件，因为它本质上是一个 JavaScript 函数。这类组件不包含任何内部状态或生命周期方法。它们主要用于展示数据和接收外部传入的 props 作为输入。由于没有自己的状态管理，它们的渲染结果完全依赖于其接收到的 props 和父级组件的状态。
+
+```jsx
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+```
+
+### 有状态组件 (Stateful Component)
+有状态组件是基于类定义的组件，它们可以维护自身的状态（state）并使用这些状态来控制其行为。这意味着你可以在组件的 `constructor` 中初始化状态，并在需要时通过调用 `setState()` 方法更新它。此外，有状态组件还可以定义生命周期方法来处理如挂载、更新和卸载等事件。
+
+```jsx
+class Counter extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+
+      count: 0,
+    };
+  }
+
+  render() {
+    return (
+      <div>
+        <p>{this.state.count}</p>
+        <button onClick={() => this.setState({ count: this.state.count + 1 })}>Increment</button>
+      </div>
+    );
+  }
+}
+```
+
+## 问题 21： react setState 调用原理
+
+在 React 中，`setState()` 方法用于更新组件的状态。当调用 `setState()` 时，React 会将新的状态合并到当前状态中，并重新渲染组件以反映这些更改。这个过程遵循以下原理：
+
+1. 合并状态: 当调用 `setState()` 时，React 会将传入的新状态与当前组件的状态进行浅层合并。这意味着如果新状态和旧状态的某些部分相同，那么这部分不会被重新渲染。
+
+2. 添加到更新队列: React 会将状态更改添加到一个更新队列中。在同一个事件循环周期内，多次调用 `setState()` 不会立即触发重新渲染，而是会被合并成一个单一的更新操作。
+
+3. 创建更新对象: React 会创建一个更新对象，该对象包含了新旧状态的差异。这个对象随后会被加入到组件的更新队列中。
+
+4. 当组件的更新队列被处理时，React 会重新执行这个组件并计算最新的状态，然后生成虚拟 DOM 树。
+
+5. 比较新旧虚拟 DOM 树: React 会将新的虚拟 DOM 树与旧的进行比较，找出需要更新的部分。也就是所谓的调和过程。这个过程是高效的，因为它只更新实际发生变化的 DOM 元素。
+
+6. 更新真实 DOM: 最后，React 会将这些更改应用到真实的 DOM 上，从而实现 UI 的更新。 也就是最后的提交阶段。
+
+### 为什么 useState 返回的是 array 而不是 object？
+
+总结：useState 返回的是 array 而不是 object 的原因就是为了降低使用的复杂度，返回数组的话可以直接根据顺序解构，而返回对象的话要想使用多次就需要定义别名了。
+
+## 问题 22： React 中的遍历方法
+
+1. 数组的 map 方法
+2. 数组的 forEach 方法
+3. 数组的 for 方法
+4. 数组的 for...of 方法
+5. 数组的 for...in 方法
+

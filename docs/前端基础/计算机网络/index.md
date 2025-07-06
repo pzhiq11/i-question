@@ -409,3 +409,56 @@ socket.addEventListener("error", (event) => {
 
 ```
 
+## 面试题 19：什么是socket？与WebSocket 的区别？
+
+### 1. Socket 的概念
+
+Socket 是网络编程中的一个抽象层，它允许应用程序通过网络进行通信。在客户端和服务器之间建立一个双向的字节流连接，可以进行数据的发送和接收。Socket 可以基于不同的协议（如 TCP、UDP）实现。
+
+- **TCP**：面向连接的传输控制协议，提供可靠的数据传输服务，适用于需要保证数据完整性和顺序的应用场景。
+- **UDP**：无连接的传输控制协议，不保证数据包的顺序或完整性，适用于实时性要求较高的应用场景。
+
+### 2. WebSocket 与 Socket 的区别
+
+尽管 WebSocket 和 Socket 都用于在网络上建立连接并交换数据，但它们在设计目的和使用方式上有一些关键的区别：
+
+- **设计初衷不同**：WebSocket 主要设计为浏览器与服务器之间的全双工通讯通道，而传统的 Socket 更多是通用术语，可以应用于各种类型的网络程序，包括但不局限于浏览器环境。
+- **使用场景差异**：WebSocket 更适合于需要在客户端和服务器之间保持持续活跃连接的应用，例如在线游戏、聊天室等；而 Socket 则更灵活，可用于多种不同类型的网络交互需求。
+
+
+## 面试题 20：SSE 是什么？ 有哪些应用场景？
+
+### 1. SSE 的概念
+
+SSE（Server-Sent Events）是一种允许服务器主动向客户端发送事件的技术。它是 HTML5 提供的一种单向通信机制，前端只需要创建一个 EventSource 对象，发送一个 HTTP 请求到服务器，然后就可以接收来自服务器的消息流，服务端可以发送多次消息，直到连接关闭。
+
+ajax是一来回，
+webSocket是双向的，来回都行。
+socket是双向的，来回都行。
+SSE是客服端建立连接，服务器可以一直发消息，客户端可以一直收。
+
+### 2. 如何使用 SSE？
+
+```js
+// 在浏览器中创建一个新的 EventSource 对象来连接服务器的事件流
+const eventSource = new EventSource("http://example.com/events"); // 只能是GET请求
+
+// 当接收到新消息时触发 message 事件
+eventSource.addEventListener("message", (event) => {
+  console.log(`Received: ${event.data}`);
+});
+
+// 当连接关闭时触发 error 事件
+eventSource.addEventListener("error", (event) => {
+  console.error("Connection closed.");
+  // 可以选择重新连接
+  // reconnect();
+});
+
+```
+
+### 3. 应用场景
+
+- **实时通知**：例如ChatGPT消息、聊天应用、新闻更新、实时大屏内容等，当有新内容产生时，可以即时推送给用户。
+- **股票行情或体育赛事直播**：实时显示最新的市场动态或比赛结果。
+- **在线游戏状态更新**：在游戏过程中，服务器可以实时将玩
