@@ -1,19 +1,14 @@
-/**
- * @param {*} obj
- * @param {*} classFunction
- * @return {boolean}
- */
-var checkIfInstanceOf = function (obj, classFunction) {
-  if (obj === null || obj === undefined) return false;
-  let proto = Object.getPrototypeOf(obj);
-  while (proto) {
-    if (proto.constructor === classFunction) return true;
-    proto = Object.getPrototypeOf(proto);
-  }
-  return false;
+Function.prototype.myCall = function (context, ...args) {
+  const ctx = context || global || window;
+  const key = Symbol();
+  ctx[key] = this;
+  const result = ctx[key](...args);
+  delete ctx[key];
+  return result;
 };
-class Animal {}
-class Dog extends Animal {}
-console.log(checkIfInstanceOf(new Dog(), Animal));
-console.log(new Dog() instanceof Animal);
 
+function a(num) {
+  console.log("pppp:", this.name, num, this);
+}
+
+a.myCall({ name: "zq" }, 12);

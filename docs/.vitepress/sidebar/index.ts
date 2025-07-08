@@ -3,7 +3,7 @@ export const sidebar = {
     {
       text: '前端基础',
       items: [
-        { text: 'HTML + CSS', link: '/前端基础/html+css/' },
+        { text: 'HTML、CSS', link: '/前端基础/html-css/' },
         { text: 'JS', link: '/前端基础/js/' },
         { text: 'TS', link: '/前端基础/ts/' },
         { text: 'Promise', link: '/前端基础/promise/' },
@@ -11,19 +11,20 @@ export const sidebar = {
       ]
     },
     {
-      text: '浏览器相关',
+      text: '浏览器知识',
       items: [
-        { text: '进程和线程', link: '/前端基础/浏览器相关/进程和线程' },
-        { text: '事件循环', link: '/前端基础/浏览器相关/事件循环' },
-        { text: '浏览器渲染原理', link: '/前端基础/浏览器相关/浏览器渲染原理' }
+        { text: '进程和线程', link: '/前端基础/浏览器知识/进程和线程' },
+        { text: '事件循环', link: '/前端基础/浏览器知识/事件循环' },
+        { text: '浏览器渲染原理', link: '/前端基础/浏览器知识/浏览器渲染原理' }
       ]
     },
     {
-      items: [{ text: '计算机网络', link: '/前端基础/计算机网络/' }]
+      items: [{ text: '常见设计模式', link: '/前端基础/设计模式/' }]
     },
     {
-      items: [{ text: '设计模式', link: '/前端基础/设计模式/' }]
+      items: [{ text: '计算机网络知识', link: '/前端基础/计算机网络/' }]
     }
+   
   ],
   '/vue/': [
     { text: '基础知识', link: '/vue/' },

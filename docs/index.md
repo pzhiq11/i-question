@@ -5,8 +5,8 @@ hero:
     tagline: 前端面试题📖
     
 features:
-    - title: 前端基础（HTML + CSS）
-      link: /前端基础/html+css/
+    - title: 前端基础（HTML - CSS）
+      link: /前端基础/html-css/
     - title: JS
       link: /前端基础/js/
     - title: Promise

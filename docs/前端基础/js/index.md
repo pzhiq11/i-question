@@ -23,18 +23,19 @@
 
     事件循环的工作流程
 
-    1. 执行全局代码：全局代码被添加到调用栈中执行。
-    2. 遇到异步操作：当遇到异步操作（如 setTimeout, Promise 等）时，相关的回调函数会被添加到任务队列或微任务队列中，而不是立即执行。
-    3. 调用栈为空：当调用栈为空时，事件循环开始检查微任务队列。如果有微任务，则依次执行直到队列为空。
-    4. 执行宏任务：所有微任务执行完毕后，事件循环会从任务队列中取出一个宏任务来执行。
-    5. 重复：重复步骤 3 和 4，直到所有宏任务和微任务都被处理完毕。
+    1. 执行全局代码：全局代码被添加到调用栈中同时创建执行上下文后执行。
+    2. 遇到异步操作：当遇到异步操作（如 setTimeout, Promise 等）时，会将异步任务交由其它线程处理，待其它线程处理完成后，相关的回调函数会被添加到任务队列或微任务队列中。
+    3. 调用栈为空：当调用栈清空时，事件循环开始优先检查微任务队列。如果有微任务，则依次取出执行直到队列为空。
+    4. 执行任务队列任务：所有微任务执行完毕后，事件循环会按一定的优先级从任务队列中取出一个任务来执行，当这个任务执行完成后，事件循环会再次检查微任务队列，如果又有新加的微任务，则又会优先执行这些微任务。通过这样重复循环，直到所有任务队列和微任务队列都被处理完毕。这就大致是事件循环的运行机制。
 
 1.  异步编程
 
-    常见的异步编程方式包括：
-    回调函数（Callbacks）
-    Promises
-    async/await
+    - 常见的异步编程方式包括：
+    - 回调函数（Callbacks）
+    - Promises
+    - async/await
+    - 事件监听（Event Listeners）
+    - setTimeout/setInterval
 
 1.  性能优化
 
@@ -46,7 +47,7 @@
     - 利用 Web Workers 进行后台计算
     - 代码拆分与懒加载
     - 使用 requestAnimationFrame 优化动画性能
-    -
+    - 等等等
 
 ## 问题 2：请说说你对函数式编程的理解
 
@@ -151,7 +152,9 @@ cacheFetchData(3).then((id) => console.log(id));
 不行，因为：
 
 1. 操作系统的计时函数本身就有少量偏差，由于 JS 的计时器最终调用的是操作系统的函数，也就携带了这些偏差
-2. 受事件循环的影响，计时器的回调函数只能在主线程空闲时运行，因此又带来了偏差
+2. 计时器官方设定当嵌套层级过多时，会设置最小间隔时间（4ms）
+3. 受事件循环的影响，计时器的回调函数只能在主线程空闲时运行，因此又带来了偏差
+4. 页面的失活也会导致计时器延迟执行
 
 ## 问题 6：js 超过 Number 最大值的数怎么处理
 
@@ -422,6 +425,8 @@ JavaScript 是浏览器的脚本语言，主要用途是<u>进行页面的一系
 
 - **`typeof` 操作符**：可以用来确定一个值的基本数据类型，返回一个表示数据类型的字符串。
 
+`typeof` 对于数组、对象、null 返回值都是 "object"。其余基本类型均可正确判断。
+
 ```js
 typeof 42; // "number"
 typeof "Hello"; // "string"
@@ -448,9 +453,15 @@ Object.prototype.toString.call({ key: "value" }); // "[object Object]"
 Object.prototype.toString.call(function () {}); // "[object Function]"
 ```
 
-- **`instanceof`** 操作符：用于检查对象是否属于某个类的实例。
+- **`instanceof`** 操作符：用于检查对象是否属于某个类的实例。工作原理是通过检查对象的原型链是否包含某个构造函数的 prototype。
+
+instanceof 只能用于对象，不适用于基本数据类型。
 
 ```js
+console.log(2 instanceof Number); // false
+console.log(true instanceof Boolean); // false
+console.log("str" instanceof String); // false
+
 var obj = {};
 obj instanceof Object; // true
 
@@ -460,6 +471,18 @@ arr instanceof Array; // true
 function Person() {}
 var person = new Person();
 person instanceof Person; // true
+```
+
+- `constructor` 属性：可以用来判断一个对象的具体类型。
+
+```js
+2.constructor === Number; // true
+"Hello".constructor === String; // true
+true.constructor === Boolean; // true
+[1, 2, 3].constructor === Array; // true
+function Person() {}.constructor === Function; // true
+({}).constructor === Object; // true
+
 ```
 
 - `Array.isArray` 方法：用于检查一个对象是否是数组。
@@ -473,13 +496,12 @@ Array.isArray("Hello"); // false
 
 ### var、 let、const 区别？
 
-1. 块级作用域： `let` 和 `const` 声明的变量具有块级作用域，而 `var` 没有。
-2. 暂时性死区（Temporal Dead Zone, TDZ）：`let` 和 `const` 声明的变量在声明之前不能被访问，而 `var` 没有。
-3. 重复声明：`let` 和 `const` 不允许在相同作用域内重复声明同一个变量，而 `var` 可以。
-4. 变量提升（Hoisting）：`var` 会进行变量提升，而 `let` 和 `const` 不存在变量提升。
+1. 变量提升（Hoisting）：`var` 会进行变量提升，而 `let` 和 `const` 不存在变量提升。
+2. 块级作用域： `let` 和 `const` 声明的变量具有块级作用域，而 `var` 没有。
+3. 暂时性死区（Temporal Dead Zone, TDZ）：`let` 和 `const` 声明的变量在声明之前不能被访问，而 `var` 可以。
+4. 重复声明：`let` 和 `const` 不允许在相同作用域内重复声明同一个变量，而 `var` 可以。
 5. 初始值： `const` 必须在使用之前进行初始化，而`let`和 `var` 可以不初始化。
 6. 更改值：`const` 声明的变量不能被重新赋值，而 `let` 和 `var` 可以。
-
 
 ### 变量提升 & 函数提升（优先级）
 
@@ -506,7 +528,9 @@ console.log(s);
 
 ## 问题 17：null 和 undefined 的区别
 
-undefined 代表的含义是未定义，null 代表的含义是空对象。一般变量声明了但还没有定义的时候会返回 undefined，null 主要用于赋值给一些可能会返回对象的变量，作为初始化。
+undefined 代表的含义是未定义，null 代表的含义是空对象。
+
+一般变量声明了但还没有定义的时候会返回 undefined，null 主要用于赋值给一些可能会返回对象的变量，作为初始化。
 
 **`null`**
 
@@ -627,7 +651,7 @@ doSomethingRepeatedly();
 
 ## 问题 19：什么是闭包，有什么作用？是否会造成内存泄漏？
 
-**定义**：<u style="background: pink;">闭包是</u>连接函数外部与函数内部的桥梁，是指有权访问另一个函数作用域中变量的函数<u style="background: pink;"></u>。它也可以延长作用域链。
+**定义**：<u style="background: pink;">闭包是</u>连接函数外部与函数内部的桥梁，是指有权访问另一个函数作用域中变量的<u>函数</u>。它也可以延长作用域链。
 
 **作用**：闭包可以保留其被定义时的作用域，这意味着闭包内部可以访问外部函数的局部变量，即使外部函数已经执行完毕。这种特性使得闭包可以在后续调用中使用这些变量。
 
@@ -940,7 +964,7 @@ class Person {
 var person1 = new Person("Alice", 30);
 ```
 
-## 问题 25：什么是作用域链
+## 问题 25：什么是作用域链 [(建议看问题 60)](#问题-60)
 
 作用域链是 JavaScript 中用于查找变量的一种机制，它是由一系列嵌套的作用域对象构成的链式结构。每个作用域对象包含了在该作用域中声明的变量以及对外部作用域的引用，目的是确定在给定的执行上下文中如何查找变量。当您引用一个变量时，JavaScript 引擎会首先在当前作用域对象中查找该变量。如果找不到，它会沿着作用域链向上查找，直到找到该变量或达到全局作用域。如果变量在全局作用域中也找不到，将抛出一个引用错误。
 
@@ -1191,7 +1215,7 @@ function Person() {
 
 > ⚠️ 注意：箭头函数的 `this` 是由定义时的作用域决定的，而不是由调用方式决定的。（即使使用 `call`、`apply` 也不能改变 this 指向，但是他可以**继承**外层作用域的 this【具体可以参考下面例 2 的`person1.foo4.call(person2)()`】）。
 
-::: tip 执行上下文 ctx
+::: tip 执行上下文 ctx [(建议看问题 59)](#问题-59)
 
 > 执行上下文可以理解是 JavaScript 代码执行的环境
 
@@ -1555,8 +1579,8 @@ Function.prototype.myBind = function (ctx, ...args) {
 
 ## 问题 33：原型链和原型对象
 
-原型是函数自带的 prototype 属性，指向一个原型对象（存放有共享属性 / 方法的普通对象）；原型对象也有原型，一层一层向上直到 Object.prototype.__proto__ 是 null，这样逐层形成的结构即是原型链。
-每个对象实例的隐藏属性 **__proto__** 指向其构造函数的原型对象，这些通过 **proto** 连接的层级结构形成原型链，用于对象访问属性时逐层向上查找（从自身到原型对象，直至 Object.prototype.__proto__ 是 null）。
+原型是函数自带的 prototype 属性，指向一个原型对象（存放有共享属性 / 方法的普通对象）；原型对象也有原型，一层一层向上直到 `Object.prototype.__proto__` 是 null，这样逐层形成的结构即是原型链。
+每个对象实例的隐藏属性 `__proto__` 指向其构造函数的原型对象，这些通过 `__proto__` 连接的层级结构形成原型链，用于对象访问属性时逐层向上查找（从自身到原型对象，直至 `Object.prototype.__proto__` 是 null）。
 
 ### 原型对象 prototype
 
@@ -2098,6 +2122,8 @@ self.onmessage = function (req) {
 
 因为 js 存储 number 是双精度浮点数存储，浮点数在计算机中无法精确表示。
 
+因为浮点数在计算机中是以二进制的形式存储的，而 0.1 和 0.2 在转换为二进制时会产生无限循环小数。在存储是这些小数时，会进行截断处理，从而导致精度丢失。
+
 **解决方法：**
 
 ```js
@@ -2579,15 +2605,31 @@ document.addEventListener(
 > - 高频事件：快速点击、滚动事件、resize 事件、mousemove 事件
 
 ```js
-const throttle = (fn, wait) => {
+const throttle = (
+  fn,
+  wait,
+  option = {
+    leading: true,
+    trailing: false,
+  }
+) => {
   let timer;
   return (...args) => {
     if (timer) {
       return;
     }
-    timer = setTimeout(() => {
+    const leadingEdge = option.leading;
+    const trailingEdge = option.trailing;
+
+    if (leadingEdge) {
       fn(...args);
+    }
+    timer = setTimeout(() => {
+      clearTimeout(timer);
       timer = null;
+      if (trailingEdge) {
+        fn(...args);
+      }
     }, wait);
   };
 };
@@ -2730,14 +2772,14 @@ Array.from(arguments);
 4. 扩展运算符：`...` \*\*
 5. 箭头函数： `=>` \*\*
 6. Promise \*\*
-7. async/await \*\*
-8. Proxy 和 Reflect \*\*
-9. Symbol \*\*
-10. 类 class \*\*
-11. 模块化 \*\*
-12. 默认参数：`function(a = 1) {}`
-13. Set、Map、WeakSet、WeakMap
-14. Generator
+<!-- 7. async/await \*\* -->
+7. Proxy 和 Reflect \*\*
+8. Symbol \*\*
+9. 类 class \*\*
+10. 模块化 \*\*
+11. 默认参数：`function(a = 1) {}`
+12. Set、Map、WeakSet、WeakMap
+13. Generator
 
 ## 问题 55： 垃圾回收机制
 
@@ -2752,14 +2794,24 @@ Array.from(arguments);
 垃圾回收的执行分为内存分配、标记、清除、整理四个核心阶段.
 其核心流程包括标记不可达对象、清除内存碎片，并通过新生代和老生代内存分区管理提升效率。
 
+### 哪些情况会导致内存泄漏？
+
+1. 意外的全局变量：未声明的变量赋值，导致无法被垃圾回收。
+2. 被遗忘的计时器或回调函数：定时器、事件监听器等如果没有正确清理，也会导致内存泄漏。
+3. 闭包滥用：不当使用闭包可能导致不必要的对象引用，阻止其被垃圾回收。
+
 ## 问题 56：http 组成
 
 1. HTTP 报文的组成部分
 
    请求报文：
+
    请求行 ( http 方法 + http 协议 + 页面地址 + 版本)
+
    请求头( key + value 值)，常见的请求头部字段包括 Host（指定服务器域名）、Connection（TCP 连接方式，如 keep-alive）、Cookie（存储于客户端的扩展字段）等 ‌
+
    空行(服务端通过空行来判断下一部分不再是请求头，而当做请求体来解析)
+
    请求体(数据部分)
 
    响应报文：
@@ -2792,13 +2844,12 @@ Array.from(arguments);
 
 AJAX 是 Asynchronous JavaScript and XML 的缩写，指的是通过 JavaScript 的 异步通信，从服务器获取 XML 文档从中提取数据，再更新当前网页的对应部分，而不用刷新整个网页。
 
-
 ## 58.isNaN 和 Number.isNaN 函数的区别？
 
 - 函数 isNaN 接收参数后，会尝试将这个参数转换为数值，任何不能被转换为数值的的值都会返回 true，因此非数字值传入也会返回 true ，会影响 NaN 的判断。
 - 函数 Number.isNaN 会首先判断传入参数是否为数字，如果是数字再继续判断是否为 NaN ，不会进行数据类型的转换，这种方法对于 NaN 的判断更为准确。
 
-## 59. 对执行上下文的理解
+## 59. 对执行上下文的理解 {#问题-59}
 
 执行上下文可以简单理解为一个对象，它包含了函数执行时的一些信息，比如：
 
@@ -2820,7 +2871,7 @@ AJAX 是 Asynchronous JavaScript and XML 的缩写，指的是通过 JavaScript 
 
 ![执行上下文](./img/执行上下文.png)
 
-## 60. 作用域和作用域链
+## 60. 作用域和作用域链 {#问题-60}
 
 ### 作用域
 
@@ -2874,7 +2925,6 @@ AJAX 是 Asynchronous JavaScript and XML 的缩写，指的是通过 JavaScript 
   implicitGlobal = "I am an implicit global variable";
   console.log(window.implicitGlobal); // In a browser environment, this will output 'I am an implicit global variable'
   ```
-
 
 ## 61：前端水印
 
@@ -2963,9 +3013,9 @@ document.body.appendChild(addWaterMark("版权所有"));
 
 1. Ajax 请求
 2. Fetch 请求
-   3: SSE 和 WebSocket
-3. jsonp
-4. Image 对象
+3. SSE 和 WebSocket
+4. jsonp
+5. Image 对象
 
 navigator.sendBeacon 方法是上述方法的补充，它允许在页面卸载时异步地向服务器发送数据。
 
@@ -2994,13 +3044,23 @@ navigator.sendBeacon 方法是上述方法的补充，它允许在页面卸载�
 6. 箭头函数没有 prototype。
 7. 箭头函数不能使用 yield 命令，因此不能用作 Generator 函数。
 
+### 箭头函数的作用是什么？
+
+1. 简化回调函数。
+2. 消除函数的二义性。
+   > 什么是二义性？ 函数有两种用途：一种是普通函数作为一个操作序列，另一种是构造器。
+
+   > ES6 箭头函数只是用来当作普通函数，不能用作构造器，消除了函数二义性 。
+
+   > ES6 引入类也是直接将类当作构造器，不能直接调用，使用 Class 来代替构造函数，消除了函数二义性 。
+
 ## 65: Map 和 Object 的区别？ Map 和 weakMap 的区别？
 
 ### Map 和 Object 的区别
 
 - 键的限制：Map 可以使用任何类型的值作为键，包括函数、对象或任意基本类型。而 Object 的键只能是 String 或是 Symbol。
 - 键的顺序：Map 保留了键值对的插入顺序，而 Object 的键是无序的。
-- 大小：Map 的键值对数量可以通过 size 属性直接获取，而 Object 需要通过计算属性的个数来得到。
+- 键值数量：Map 的键值对数量可以通过 size 属性直接获取，而 Object 需要通过计算属性的个数来得到。
 - 性能：在频繁增删键值对的场景下，Map 的表现通常优于 Object。
 
 ### Map 和 WeakMap 的区别
@@ -3009,4 +3069,3 @@ navigator.sendBeacon 方法是上述方法的补充，它允许在页面卸载�
 - 垃圾回收：WeakMap 的键是“弱引用”，即如果没有其他的引用指向这个对象，那么这些对象的内存就会被回收。而 Map 则持有其所有键的强引用。
 - 不可迭代：WeakMap 的实例不能被遍历，即没有 `keys()`、`values()` 和 `entries()` 方法。
 - 没有 size 属性：WeakMap 不提供 `size` 属性来获取键值对的数量。
-
