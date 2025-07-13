@@ -41,6 +41,7 @@ export const sidebar = {
   '/前端工程化/': [
     {
       items: [
+        { text: '前端工程化', link: '/前端工程化/前端工程化' },
         { text: '模块化规范', link: '/前端工程化/模块化规范' },
         { text: 'peerDependencies', link: '/前端工程化/peerDependencies' },
         { text: 'pnpm优势', link: '/前端工程化/pnpm优势' },
